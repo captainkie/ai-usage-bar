@@ -28,7 +28,13 @@ anyone else.
 
 <img src="docs/panel.png" width="640" alt="AI Usage Bar panel" />
 
+<sub>Menu-bar panel · Touch Bar · floating bar — pick any</sub>
+
 <img src="docs/touchbar.png" width="640" alt="Touch Bar readout" />
+
+<img src="docs/floatingbar.png" width="480" alt="Floating bar" />
+
+📖 **[Feature tour →](docs/FEATURES.md)**
 
 </div>
 

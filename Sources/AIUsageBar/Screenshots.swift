@@ -26,6 +26,7 @@ func renderShots(to dir: String) {
 
     save(HeroShot(viewModel: vm), "panel.png")
     save(TouchBarShot(viewModel: vm), "touchbar.png")
+    save(FloatingBarShot(viewModel: vm), "floatingbar.png")
 }
 
 private let amber = Color(red: 1.0, green: 0.70, blue: 0.14)
@@ -167,5 +168,52 @@ private struct TouchBarShot: View {
             .padding(.leading, 24)
         }
         .frame(width: 1000, height: 44)
+    }
+}
+
+private struct FloatingBarShot: View {
+    let viewModel: UsageViewModel
+
+    var body: some View {
+        ZStack {
+            LinearGradient(
+                colors: [Color(red: 0.13, green: 0.16, blue: 0.22),
+                         Color(red: 0.06, green: 0.08, blue: 0.12)],
+                startPoint: .topLeading, endPoint: .bottomTrailing)
+            pill.shadow(color: .black.opacity(0.5), radius: 20, y: 10)
+        }
+        .frame(width: 720, height: 200)
+    }
+
+    private var pill: some View {
+        HStack(spacing: 12) {
+            GaugeMark(size: 18)
+            segment("5h", viewModel.sessionWindow)
+            segment("wk", viewModel.weeklyWindow)
+            Text("\(viewModel.modelName ?? "Opus 4.8")\(viewModel.currentEffort.map { " · \($0)" } ?? "")")
+                .font(.system(size: 11, weight: .medium))
+                .foregroundStyle(.white.opacity(0.6))
+        }
+        .padding(.horizontal, 16)
+        .padding(.vertical, 10)
+        .background(
+            Capsule().fill(Color(red: 0.12, green: 0.12, blue: 0.14))
+                .overlay(Capsule().strokeBorder(.white.opacity(0.12)))
+        )
+    }
+
+    private func segment(_ label: String, _ window: UsageWindow?) -> some View {
+        let percent = window?.utilization ?? 0
+        return HStack(spacing: 6) {
+            Text(label).font(.system(size: 10)).foregroundStyle(.white.opacity(0.55))
+            ZStack(alignment: .leading) {
+                Capsule().fill(Color.white.opacity(0.14)).frame(width: 46, height: 5)
+                Capsule().fill(severityColor(percent))
+                    .frame(width: max(4, 46 * min(1, percent / 100)), height: 5)
+            }
+            Text("\(Int(percent.rounded()))%")
+                .font(.system(size: 11, weight: .semibold).monospacedDigit())
+                .foregroundStyle(severityColor(percent))
+        }
     }
 }
