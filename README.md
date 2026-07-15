@@ -26,6 +26,7 @@ anyone else.
 - **`● 5h 12%  7d 45%`** right in your menu bar — updated automatically.
 - Click for a panel with progress bars, the model you're on (e.g. *Opus 4.8*),
   and live **"resets in 1h 14m"** countdowns.
+- **Touch Bar** — a persistent item in the Control Strip on Macs that have one.
 - **Launch at login** toggle.
 - **Private by design** — the only network call is to `api.anthropic.com`.
   Your token never leaves your Mac.
@@ -60,8 +61,9 @@ On first launch macOS asks to allow Keychain access to
 
 - [x] Claude Code — 5-hour + weekly limits, model, reset countdowns
 - [x] Menu-bar app, `.app` bundle, launch at login
+- [x] Touch Bar Control Strip item *(uses private `DFRFoundation` — not App Store safe)*
 - [ ] Codex, Gemini, OpenCode providers *(needs those CLIs installed to wire up)*
-- [ ] Floating bar + Touch Bar views
+- [ ] Floating bar view
 - [ ] Automatic OAuth token refresh
 - [ ] Notarized release download
 
@@ -77,6 +79,7 @@ Sources/AIUsageBar/
   UsageModels.swift   response model
   UsageViewModel.swift state + derived values
   LoginItem.swift     launch-at-login (SMAppService)
+  TouchBarController.swift  Control Strip item (DFRFoundation bridge)
   Formatting.swift    date parsing, countdowns, severity colors
 scripts/build-app.sh  assemble + ad-hoc sign AIUsageBar.app
 ```

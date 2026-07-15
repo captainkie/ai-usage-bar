@@ -6,6 +6,7 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
     private var statusItem: NSStatusItem!
     private let popover = NSPopover()
     private let viewModel = UsageViewModel()
+    private let touchBar = TouchBarController()
     private var refreshTimer: Timer?
 
     private let refreshInterval: TimeInterval = 60
@@ -27,7 +28,10 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
             )
         )
 
-        updateButton()
+        touchBar.onTap = { [weak self] in self?.togglePopover() }
+        touchBar.install()
+
+        updateDisplays()
         refresh()
 
         refreshTimer = Timer.scheduledTimer(withTimeInterval: refreshInterval, repeats: true) { [weak self] _ in
@@ -35,31 +39,40 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
         }
     }
 
+    func applicationWillTerminate(_ notification: Notification) {
+        touchBar.remove()
+    }
+
     // MARK: - Data
 
     private func refresh() {
         Task { @MainActor in
             await viewModel.reload()
-            updateButton()
+            updateDisplays()
         }
     }
 
-    // MARK: - Menu bar title
+    // MARK: - Menu bar + Touch Bar title
 
-    private func updateButton() {
-        guard let button = statusItem.button else { return }
+    private func updateDisplays() {
+        let title = compactTitle()
+        if let button = statusItem.button {
+            button.image = nil
+            button.attributedTitle = title
+        }
+        touchBar.update(title)
+    }
 
+    /// Shared compact rendering used by both the menu bar and the Touch Bar.
+    private func compactTitle() -> NSAttributedString {
         switch viewModel.phase {
         case .loading:
-            button.attributedTitle = title("Loading…", color: .secondaryLabelColor)
+            return plain("AI …", color: .secondaryLabelColor)
 
         case .failed:
-            button.image = NSImage(systemSymbolName: "exclamationmark.triangle.fill",
-                                   accessibilityDescription: "Login required")
-            button.attributedTitle = title("", color: .systemOrange)
+            return plain("⚠ login required", color: .systemOrange)
 
         case .loaded:
-            button.image = nil
             let session = viewModel.sessionPercent
             let weekly = viewModel.weeklyPercent
 
@@ -78,11 +91,11 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
                     .font: NSFont.monospacedDigitSystemFont(ofSize: 12, weight: .medium),
                 ]
             ))
-            button.attributedTitle = text
+            return text
         }
     }
 
-    private func title(_ string: String, color: NSColor) -> NSAttributedString {
+    private func plain(_ string: String, color: NSColor) -> NSAttributedString {
         NSAttributedString(
             string: string,
             attributes: [
@@ -99,6 +112,9 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
         if popover.isShown {
             popover.performClose(nil)
         } else {
+            // Bring the app forward so the popover can key even when triggered
+            // from the Touch Bar while another app is focused.
+            NSApp.activate(ignoringOtherApps: true)
             popover.show(relativeTo: button.bounds, of: button, preferredEdge: .minY)
             popover.contentViewController?.view.window?.makeKey()
         }

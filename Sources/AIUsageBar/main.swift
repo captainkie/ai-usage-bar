@@ -22,6 +22,7 @@ func runSelfTest() {
     let semaphore = DispatchSemaphore(value: 0)
     Task {
         do {
+            print("touchbar: supported=\(TouchBarController.isSupported)")
             // Debug override: skip the Keychain gate when a token is injected.
             let injected = ProcessInfo.processInfo.environment["AIUSAGEBAR_TOKEN"]
             let credentials: ClaudeCredentials
