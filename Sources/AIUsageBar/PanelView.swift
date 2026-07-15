@@ -12,30 +12,14 @@ struct PanelView: View {
     var body: some View {
         VStack(alignment: .leading, spacing: 16) {
             header
-            cardsArea
+            content
+            ForEach(viewModel.extraCards) { ProviderCardView(card: $0) }
             Divider().opacity(0.5)
             footer
         }
         .padding(18)
         .frame(width: 320)
         .background(.regularMaterial)
-    }
-
-    /// Cards. When there are extra providers the stack can get tall, so bound
-    /// it with a plain (non-measured) scroll view so the popover never grows
-    /// past the screen.
-    @ViewBuilder
-    private var cardsArea: some View {
-        let cards = VStack(alignment: .leading, spacing: 16) {
-            content
-            ForEach(viewModel.extraCards) { ProviderCardView(card: $0) }
-        }
-        if viewModel.extraCards.isEmpty {
-            cards
-        } else {
-            ScrollView(.vertical, showsIndicators: true) { cards }
-                .frame(maxHeight: 320)
-        }
     }
 
     // MARK: Header
