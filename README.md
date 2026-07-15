@@ -41,6 +41,23 @@ anyone else.
 
 No analytics, no accounts, no telemetry.
 
+## Platform support
+
+| Platform | Status |
+|---|---|
+| **macOS 13+** (Ventura and later), Apple Silicon & Intel | ✅ Supported |
+| Windows | ❌ Not supported |
+| Linux | ❌ Not supported |
+
+The app is built on macOS-only frameworks — the AppKit menu bar
+(`NSStatusItem`), the macOS **Keychain**, the **Touch Bar** (`DFRFoundation`),
+and `SMAppService`. A Windows or Linux version would not be a port but a
+separate build: the **usage-fetch logic** (read the Claude Code token, call
+`/api/oauth/usage`) is portable, but the tray UI and credential storage are
+platform-specific. On Windows/Linux, Claude Code typically stores its token in
+`~/.claude/.credentials.json` (a file) rather than the Keychain, which such a
+build would read instead. Contributions welcome.
+
 ## Build & run
 
 Requires macOS 13+, Xcode command-line tools, and a Claude Code login.
@@ -56,6 +73,22 @@ open -a AIUsageBar
 
 On first launch macOS asks to allow Keychain access to
 `Claude Code-credentials` — click **Always Allow**.
+
+## Security & privacy
+
+Your data stays on your Mac. In short:
+
+- Reads your **existing** Claude Code token from the macOS Keychain —
+  **read-only**, and only after you approve the macOS prompt.
+- Sends it **only** as a `Bearer` header to **one** endpoint,
+  `api.anthropic.com/api/oauth/usage` — the same one `/status` uses.
+- **No** other network calls, telemetry, analytics, accounts, or third-party
+  SDKs. The token is never written to disk, logged, or sent elsewhere.
+- Uses **only your own credentials** to read **your own** usage — it bypasses
+  no authentication or access control.
+
+Full details, threat model, and how to verify it yourself:
+[SECURITY.md](SECURITY.md) · [PRIVACY.md](PRIVACY.md).
 
 ## Roadmap
 
@@ -89,8 +122,18 @@ scripts/build-app.sh  assemble + ad-hoc sign AIUsageBar.app
 If this saves you a few `/status` checks, you can
 [buy me a coffee ☕](https://buymeacoffee.com/captainkiez) — thank you!
 
+## Legal
+
+**Not affiliated with Anthropic, OpenAI, Google, or Apple.** This tool reads
+**your own** local credentials and queries an **undocumented** endpoint to show
+**your own** usage; it may break at any time, and you are responsible for
+complying with the relevant provider's Terms of Service. Provided **as-is**,
+with no warranty. See [DISCLAIMER.md](DISCLAIMER.md) for the full notice,
+trademark attributions, and limitation of liability.
+
 ## License
 
-[MIT](LICENSE) © captainkie
+[MIT](LICENSE) © 2026 captainkie · Fosivo Labs
 
-> Not affiliated with Anthropic. "Claude" is a trademark of Anthropic.
+> "Claude" and "Anthropic" are trademarks of Anthropic. Other names are
+> trademarks of their respective owners; used nominatively.

@@ -14,7 +14,18 @@ cd "$(dirname "$0")/.."
 CONFIG="release"
 APP="AIUsageBar.app"
 BUNDLE_ID="co.th.aiusagebar.selfhost"
-SIGN_IDENTITY="${SIGN_IDENTITY:--}"   # default: ad-hoc
+CERT_NAME="AI Usage Bar Self-Signed"
+
+# Prefer the stable self-signed identity (so macOS remembers "Always Allow"
+# across rebuilds). Fall back to ad-hoc if it isn't set up yet.
+if [[ -z "${SIGN_IDENTITY:-}" ]]; then
+    if security find-identity -p codesigning 2>/dev/null | grep -qF "$CERT_NAME"; then
+        SIGN_IDENTITY="$CERT_NAME"
+    else
+        SIGN_IDENTITY="-"
+        echo "note: run ./scripts/dev-cert.sh once for a stable signature (fewer Keychain prompts)"
+    fi
+fi
 
 echo "==> Building ($CONFIG)"
 swift build -c "$CONFIG"

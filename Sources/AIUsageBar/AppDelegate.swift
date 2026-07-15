@@ -69,8 +69,13 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
         case .loading:
             return plain("AI …", color: .secondaryLabelColor)
 
-        case .failed:
-            return plain("⚠ login required", color: .systemOrange)
+        case .failed(let kind, _):
+            switch kind {
+            case .auth:
+                return plain("⚠ login required", color: .systemOrange)
+            case .transient:
+                return plain("AI …", color: .secondaryLabelColor)
+            }
 
         case .loaded:
             let session = viewModel.sessionPercent

@@ -77,14 +77,17 @@ struct PanelView: View {
             }
             .frame(maxWidth: .infinity, minHeight: 96)
 
-        case .failed(let message):
+        case .failed(let kind, let message):
             VStack(alignment: .leading, spacing: 6) {
-                Label(message, systemImage: "exclamationmark.triangle.fill")
+                Label(message, systemImage: kind == .auth
+                        ? "exclamationmark.triangle.fill" : "wifi.exclamationmark")
                     .font(.subheadline)
                     .foregroundStyle(Color(red: 0.98, green: 0.72, blue: 0.30))
-                Text("Sign in with Claude Code, then hit refresh.")
-                    .font(.caption)
-                    .foregroundStyle(.secondary)
+                if kind == .auth {
+                    Text("Sign in with Claude Code, then hit refresh.")
+                        .font(.caption)
+                        .foregroundStyle(.secondary)
+                }
             }
             .frame(maxWidth: .infinity, alignment: .leading)
             .padding(.vertical, 8)
@@ -148,7 +151,11 @@ struct PanelView: View {
 
                 Spacer()
 
-                if let updated = viewModel.lastUpdated {
+                if viewModel.isStale {
+                    Label("reconnecting…", systemImage: "arrow.triangle.2.circlepath")
+                        .font(.caption2)
+                        .foregroundStyle(Color(red: 0.98, green: 0.72, blue: 0.30))
+                } else if let updated = viewModel.lastUpdated {
                     Text("Updated \(updated.formatted(date: .omitted, time: .shortened))")
                         .font(.caption2)
                         .foregroundStyle(.tertiary)

@@ -23,16 +23,8 @@ func runSelfTest() {
     Task {
         do {
             print("touchbar: supported=\(TouchBarController.isSupported)")
-            // Debug override: skip the Keychain gate when a token is injected.
-            let injected = ProcessInfo.processInfo.environment["AIUSAGEBAR_TOKEN"]
-            let credentials: ClaudeCredentials
-            if let injected, !injected.isEmpty {
-                credentials = ClaudeCredentials(accessToken: injected, refreshToken: nil,
-                                                expiresAt: nil, subscriptionType: "(injected)",
-                                                rateLimitTier: "(injected)")
-            } else {
-                credentials = try readClaudeCredentials()
-            }
+            // The token is ONLY ever read from the Keychain — no other source.
+            let credentials = try readClaudeCredentials()
             let usage = try await UsageService().fetchUsage(token: credentials.accessToken)
 
             let session = Int((usage.fiveHour?.utilization ?? 0).rounded())
