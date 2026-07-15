@@ -17,6 +17,8 @@ final class UsageViewModel: ObservableObject {
     @Published private(set) var lastUpdated: Date?
     @Published private(set) var plan: String?
     @Published private(set) var tier: String?
+    /// The model you're actually using (from the local transcript, not the API).
+    @Published private(set) var currentModel: String?
     /// True when the latest refresh failed but we are still showing cached data.
     @Published private(set) var isStale = false
 
@@ -33,6 +35,11 @@ final class UsageViewModel: ObservableObject {
             let usage = try await service.fetchUsage(token: credentials.accessToken)
             plan = credentials.subscriptionType
             tier = credentials.rateLimitTier
+            if let model = await Task.detached(priority: .utility, operation: {
+                currentModelDisplay()
+            }).value {
+                currentModel = model
+            }
             lastGood = usage
             lastUpdated = Date()
             isStale = false
@@ -77,13 +84,8 @@ final class UsageViewModel: ObservableObject {
         return nil
     }
 
-    /// The most specific model name the endpoint reports (from a scoped limit).
-    var modelName: String? {
-        guard case let .loaded(usage) = phase else { return nil }
-        return usage.limits?
-            .compactMap { $0.scope?.model?.displayName }
-            .first
-    }
+    /// The model you're actually running (see `currentModel`).
+    var modelName: String? { currentModel }
 
     var sessionPercent: Int { Int((sessionWindow?.utilization ?? 0).rounded()) }
     var weeklyPercent: Int { Int((weeklyWindow?.utilization ?? 0).rounded()) }

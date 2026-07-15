@@ -87,6 +87,9 @@ final class TouchBarController: NSObject, NSTouchBarDelegate {
     }
 
     private func presentFull() {
+        // Make sure the Control Strip item is present before anchoring to it.
+        dfrSetControlStripPresence?(controlStripIdentifier.rawValue as CFString, true)
+
         let bar = fullTouchBar ?? makeFullTouchBar()
         fullTouchBar = bar
 
@@ -102,10 +105,12 @@ final class TouchBarController: NSObject, NSTouchBarDelegate {
         onTapFallback?()   // couldn't present modal — open the popover instead
     }
 
-    @objc private func dismissFull() {
+    /// Collapse the modal back to the Control Strip item (which stays tappable).
+    /// NOT `dismiss…`, which tears the item down so it can't be reopened.
+    @objc private func minimizeFull() {
         guard let bar = fullTouchBar else { return }
         let cls: AnyObject = NSTouchBar.self
-        for name in ["dismissSystemModalTouchBar:", "dismissSystemModalFunctionBar:"] {
+        for name in ["minimizeSystemModalTouchBar:", "minimizeSystemModalFunctionBar:"] {
             let sel = NSSelectorFromString(name)
             if cls.responds(to: sel) {
                 _ = cls.perform(sel, with: bar)
@@ -137,7 +142,7 @@ final class TouchBarController: NSObject, NSTouchBarDelegate {
             let close = NSButton(
                 image: NSImage(systemSymbolName: "xmark.circle.fill", accessibilityDescription: "Close")
                     ?? NSImage(),
-                target: self, action: #selector(dismissFull)
+                target: self, action: #selector(minimizeFull)
             )
             close.bezelStyle = .rounded
             item.view = close

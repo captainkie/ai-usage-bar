@@ -31,7 +31,11 @@ vulnerability. Every claim here is verifiable in the source.
 - The Buy-me-a-coffee / GitHub links open in your browser **only when you
   click them** — the app makes no automatic request to them.
 
-### Filesystem
+### Filesystem (read-only)
+- To show the model you're actually using, the app reads the **tail** of your
+  most recently modified Claude Code transcript under `~/.claude/projects/`
+  (looking only at the `message.model` field). This is a local read; nothing
+  from your transcripts is transmitted, stored, or logged.
 - No files are written. App settings (when enabled) use macOS `UserDefaults`
   and never contain your token.
 
@@ -70,10 +74,11 @@ functionally equivalent to running Claude Code's own `/status`.
 
 ## Verify it yourself
 
-1. **Read the source** — the app is ~600 lines. Only two files touch secrets or
-   the network:
+1. **Read the source** — the app is ~700 lines. Only three files touch secrets,
+   the network, or your files:
    - `Sources/AIUsageBar/Keychain.swift` — the Keychain read
    - `Sources/AIUsageBar/UsageService.swift` — the single API call
+   - `Sources/AIUsageBar/CurrentModel.swift` — the read-only transcript peek
 2. **Watch the network** with Little Snitch / LuLu / `nettop -m route` — you'll
    see only `api.anthropic.com`.
 3. **Build from source:** `swift build -c release`.
