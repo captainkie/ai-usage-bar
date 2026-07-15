@@ -40,6 +40,11 @@ yourself, nothing downloaded from anyone else.
 
 ---
 
+> 🤖 **Want it on your desk, not just your menu bar?** Meet the hardware sibling —
+> **[AI Usage Bar · ESP32](https://github.com/captainkie/ai-usage-esp32)**: the same
+> live usage feed on a tiny 640×172 touch display, with a pixel companion that panics
+> as you near your limit. Run both. 🖥️ + 🤖
+
 ## Install
 
 **One line** (downloads the latest release — no Xcode needed):
