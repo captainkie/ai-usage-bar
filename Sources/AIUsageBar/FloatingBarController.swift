@@ -49,11 +49,20 @@ final class FloatingBarController: NSObject, NSWindowDelegate {
         panel.setContentSize(hosting.fittingSize)
         panel.delegate = self
 
+        let size = panel.frame.size
+        var restored: NSPoint?
         if let saved = UserDefaults.standard.string(forKey: positionKey) {
-            panel.setFrameOrigin(NSPointFromString(saved))
+            let point = NSPointFromString(saved)
+            // Only reuse a saved position if it's still on a visible screen
+            // (a different monitor arrangement can strand it off-screen).
+            if Self.isVisible(NSRect(origin: point, size: size)) { restored = point }
+        }
+        if let restored {
+            panel.setFrameOrigin(restored)
         } else if let screen = NSScreen.main {
             let f = screen.visibleFrame
-            panel.setFrameOrigin(NSPoint(x: f.midX - panel.frame.width / 2, y: f.maxY - 120))
+            panel.setFrameOrigin(NSPoint(x: f.midX - size.width / 2, y: f.maxY - size.height - 20))
+            UserDefaults.standard.removeObject(forKey: positionKey)
         }
 
         self.panel = panel
@@ -63,5 +72,9 @@ final class FloatingBarController: NSObject, NSWindowDelegate {
     func windowDidMove(_ notification: Notification) {
         guard let panel else { return }
         UserDefaults.standard.set(NSStringFromPoint(panel.frame.origin), forKey: positionKey)
+    }
+
+    private static func isVisible(_ rect: NSRect) -> Bool {
+        NSScreen.screens.contains { $0.visibleFrame.intersects(rect) }
     }
 }
