@@ -26,7 +26,7 @@ final class Settings: ObservableObject {
         showWeekly         = store.object(forKey: Key.weekly) as? Bool ?? true
         showModel          = store.object(forKey: Key.model) as? Bool ?? true
         showResetCountdown = store.object(forKey: Key.reset) as? Bool ?? true
-        refreshSeconds     = store.object(forKey: Key.refresh) as? Int ?? 60
+        refreshSeconds     = store.object(forKey: Key.refresh) as? Int ?? 180
         showFloatingBar    = store.object(forKey: Key.floating) as? Bool ?? false
         hasOnboarded       = store.bool(forKey: Key.onboarded)
     }
