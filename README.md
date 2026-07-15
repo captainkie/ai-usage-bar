@@ -17,6 +17,9 @@ anyone else.
 ![Platform](https://img.shields.io/badge/macOS-13%2B-black?logo=apple)
 ![Swift](https://img.shields.io/badge/Swift-5.9%2B-F05138?logo=swift&logoColor=white)
 
+<a href="https://github.com/sponsors/captainkie">
+  <img src="https://img.shields.io/badge/Sponsor-captainkie-EA4AAA?logo=githubsponsors&logoColor=white" alt="Sponsor on GitHub">
+</a>
 <a href="https://buymeacoffee.com/captainkiez">
   <img src="https://img.shields.io/badge/Buy%20me%20a%20coffee-captainkiez-FFDD00?logo=buymeacoffee&logoColor=black" alt="Buy me a coffee">
 </a>
@@ -141,8 +144,12 @@ scripts/build-app.sh  assemble + ad-hoc sign AIUsageBar.app
 
 ## Support
 
-If this saves you a few `/status` checks, you can
-[buy me a coffee ☕](https://buymeacoffee.com/captainkiez) — thank you!
+If this saves you a few `/status` checks:
+
+- 💖 **[Sponsor on GitHub](https://github.com/sponsors/captainkie)** — monthly or one-time
+- ☕ **[Buy me a coffee](https://buymeacoffee.com/captainkiez)**
+
+Thank you! 🙏
 
 ## Legal
 
