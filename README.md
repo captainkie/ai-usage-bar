@@ -125,8 +125,8 @@ Full details, threat model, and how to verify it yourself:
 - [x] Claude Code — 5-hour + weekly limits, model, reset countdowns
 - [x] Menu-bar app, `.app` bundle, launch at login
 - [x] Touch Bar Control Strip item *(uses private `DFRFoundation` — not App Store safe)*
+- [x] Floating bar (draggable, always-on-top pill)
 - [ ] Codex, Gemini, OpenCode providers *(needs those CLIs installed to wire up)*
-- [ ] Floating bar view
 - [ ] Automatic OAuth token refresh
 - [ ] Notarized release download
 

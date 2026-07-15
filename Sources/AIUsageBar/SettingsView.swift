@@ -32,6 +32,8 @@ struct SettingsView: View {
                     }
                     .padding(.vertical, 2)
 
+                    toggle("Floating bar (drag anywhere)", $settings.showFloatingBar)
+
                     Toggle("Launch at login", isOn: $launchAtLogin)
                         .disabled(!LoginItem.isBundledApp)
                         .onChange(of: launchAtLogin) { newValue in

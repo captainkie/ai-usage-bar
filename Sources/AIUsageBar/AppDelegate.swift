@@ -8,6 +8,7 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
     private let popover = NSPopover()
     private let viewModel = UsageViewModel()
     private let touchBar = TouchBarController()
+    private let floatingBar = FloatingBarController()
     private let settings = Settings.shared
 
     private var tickTimer: Timer?
@@ -37,6 +38,9 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
 
         touchBar.onTapFallback = { [weak self] in self?.togglePopover() }
         touchBar.install(viewModel: viewModel)
+
+        floatingBar.setViewModel(viewModel)
+        floatingBar.setVisible(settings.showFloatingBar)
 
         // Re-render the menu bar when display settings change.
         settingsObserver = settings.objectWillChange.sink { [weak self] in
@@ -83,6 +87,7 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
             button.attributedTitle = title
         }
         touchBar.update(title)
+        floatingBar.setVisible(settings.showFloatingBar)
     }
 
     private func compactTitle() -> NSAttributedString {

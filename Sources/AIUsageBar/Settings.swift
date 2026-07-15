@@ -13,6 +13,7 @@ final class Settings: ObservableObject {
     @Published var showModel: Bool { didSet { save() } }
     @Published var showResetCountdown: Bool { didSet { save() } }
     @Published var refreshSeconds: Int { didSet { save() } }
+    @Published var showFloatingBar: Bool { didSet { save() } }
     @Published var hasOnboarded: Bool { didSet { save() } }
 
     /// Minimum poll interval — be a good citizen of an undocumented endpoint.
@@ -26,6 +27,7 @@ final class Settings: ObservableObject {
         showModel          = store.object(forKey: Key.model) as? Bool ?? true
         showResetCountdown = store.object(forKey: Key.reset) as? Bool ?? true
         refreshSeconds     = store.object(forKey: Key.refresh) as? Int ?? 60
+        showFloatingBar    = store.object(forKey: Key.floating) as? Bool ?? false
         hasOnboarded       = store.bool(forKey: Key.onboarded)
     }
 
@@ -42,6 +44,7 @@ final class Settings: ObservableObject {
         store.set(showModel, forKey: Key.model)
         store.set(showResetCountdown, forKey: Key.reset)
         store.set(max(Self.minRefresh, refreshSeconds), forKey: Key.refresh)
+        store.set(showFloatingBar, forKey: Key.floating)
         store.set(hasOnboarded, forKey: Key.onboarded)
     }
 
@@ -52,6 +55,7 @@ final class Settings: ObservableObject {
         static let model = "showModel"
         static let reset = "showResetCountdown"
         static let refresh = "refreshSeconds"
+        static let floating = "showFloatingBar"
         static let onboarded = "hasOnboarded"
     }
 }
