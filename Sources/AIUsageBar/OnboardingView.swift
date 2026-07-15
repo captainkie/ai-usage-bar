@@ -42,8 +42,7 @@ struct OnboardingView: View {
 
     private var header: some View {
         VStack(spacing: 6) {
-            Image(nsImage: NSApplication.shared.applicationIconImage)
-                .resizable().frame(width: 64, height: 64)
+            GaugeMark(size: 64)
             Text("Welcome to AI Usage")
                 .font(.title2.weight(.bold))
             Text("by Fosivo Labs")

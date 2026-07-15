@@ -25,9 +25,7 @@ struct PanelView: View {
 
     private var header: some View {
         HStack(spacing: 11) {
-            Image(nsImage: NSApplication.shared.applicationIconImage)
-                .resizable()
-                .frame(width: 30, height: 30)
+            GaugeMark(size: 30)
 
             VStack(alignment: .leading, spacing: 1) {
                 Text("AI Usage").font(.headline)
