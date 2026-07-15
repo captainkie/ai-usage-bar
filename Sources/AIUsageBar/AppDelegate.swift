@@ -28,8 +28,8 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
             )
         )
 
-        touchBar.onTap = { [weak self] in self?.togglePopover() }
-        touchBar.install()
+        touchBar.onTapFallback = { [weak self] in self?.togglePopover() }
+        touchBar.install(viewModel: viewModel)
 
         updateDisplays()
         refresh()
