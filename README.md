@@ -24,6 +24,12 @@ anyone else.
   <img src="https://img.shields.io/badge/Buy%20me%20a%20coffee-captainkiez-FFDD00?logo=buymeacoffee&logoColor=black" alt="Buy me a coffee">
 </a>
 
+<br/><br/>
+
+<img src="docs/panel.png" width="640" alt="AI Usage Bar panel" />
+
+<img src="docs/touchbar.png" width="640" alt="Touch Bar readout" />
+
 </div>
 
 ---
@@ -42,9 +48,9 @@ curl -fsSL https://raw.githubusercontent.com/captainkie/ai-usage-bar/main/instal
 brew install captainkie/tap/ai-usage-bar
 ```
 
-On first launch, approve the Keychain prompt (**Always Allow**), then look for
-the `● 5h .. 7d ..` item in your menu bar (and the Touch Bar, if your Mac has
-one). Requires macOS 13+ and a signed-in Claude Code.
+That's it — the `● 5h .. wk ..` item appears in your menu bar (and the Touch
+Bar, if your Mac has one). **No Keychain prompt** — it reads your token through
+Apple's own `security` tool. Requires macOS 13+ and a signed-in Claude Code.
 
 ## What it does
 
@@ -59,7 +65,7 @@ one). Requires macOS 13+ and a signed-in Claude Code.
 ## How it works
 
 1. Reads Claude Code's OAuth token from your login **Keychain**
-   (`Claude Code-credentials`, read-only).
+   (`Claude Code-credentials`, read-only) via Apple's `security` tool — no prompt.
 2. Calls **`GET https://api.anthropic.com/api/oauth/usage`** — the exact
    endpoint Claude Code's `/status` uses.
 3. Renders `five_hour` / `seven_day` utilization + reset times.
@@ -96,15 +102,14 @@ swift run
 open -a AIUsageBar
 ```
 
-On first launch macOS asks to allow Keychain access to
-`Claude Code-credentials` — click **Always Allow**.
+No Keychain prompt — the app reads your token through Apple's `security` tool.
 
 ## Security & privacy
 
 Your data stays on your Mac. In short:
 
-- Reads your **existing** Claude Code token from the macOS Keychain —
-  **read-only**, and only after you approve the macOS prompt.
+- Reads your **existing** Claude Code token from the macOS Keychain
+  (**read-only**) via Apple's `security` tool — no prompt.
 - Sends it **only** as a `Bearer` header to **one** endpoint,
   `api.anthropic.com/api/oauth/usage` — the same one `/status` uses.
 - **No** other network calls, telemetry, analytics, accounts, or third-party

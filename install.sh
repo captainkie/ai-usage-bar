@@ -32,9 +32,7 @@ open "$DEST"
 
 cat <<'DONE'
 
-Installed. On first launch, macOS asks to allow Keychain access to
-"Claude Code-credentials" — click Always Allow.
-
-Then look for the "5h .. 7d .." item in your menu bar (and the Touch Bar,
-if your Mac has one).
+Installed. Look for the "5h .. wk .." item in your menu bar (and the Touch Bar,
+if your Mac has one). No Keychain prompt — it reads your Claude token through
+Apple's own "security" tool.
 DONE

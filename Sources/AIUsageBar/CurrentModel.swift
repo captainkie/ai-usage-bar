@@ -74,6 +74,32 @@ private func newestTranscripts(under root: URL, limit: Int) -> [URL] {
     return dated.sorted { $0.1 > $1.1 }.prefix(limit).map(\.0)
 }
 
+/// The current reasoning-effort level, from Claude Code's settings
+/// (`effortLevel`, e.g. "xhigh"). Read-only, local.
+func currentEffortDisplay() -> String? {
+    let home = FileManager.default.homeDirectoryForCurrentUser
+    for name in [".claude/settings.local.json", ".claude/settings.json"] {
+        let url = home.appendingPathComponent(name)
+        guard let data = try? Data(contentsOf: url),
+              let obj = try? JSONSerialization.jsonObject(with: data) as? [String: Any],
+              let level = obj["effortLevel"] as? String, !level.isEmpty
+        else { continue }
+        return prettyEffort(level)
+    }
+    return nil
+}
+
+func prettyEffort(_ raw: String) -> String {
+    switch raw.lowercased() {
+    case "low":    return "Low"
+    case "medium": return "Medium"
+    case "high":   return "High"
+    case "xhigh":  return "xHigh"
+    case "max":    return "Max"
+    default:       return raw.prefix(1).uppercased() + raw.dropFirst()
+    }
+}
+
 /// "claude-opus-4-8" -> "Opus 4.8", "claude-haiku-4-5-20251001" -> "Haiku 4.5",
 /// "claude-opus-4-8[1m]" -> "Opus 4.8 · 1M".
 func prettyModelName(_ id: String) -> String {

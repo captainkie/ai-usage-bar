@@ -6,8 +6,9 @@ vulnerability. Every claim here is verifiable in the source.
 
 ## TL;DR
 
-- Reads your **existing** Claude Code login token from the macOS Keychain —
-  **read-only**, and only after you approve the standard macOS prompt.
+- Reads your **existing** Claude Code login token from the macOS Keychain
+  (**read-only**) via Apple's own `security` tool — no prompt, nothing leaves
+  your Mac.
 - Sends it **only** as an `Authorization: Bearer` header to **one** endpoint:
   `https://api.anthropic.com/api/oauth/usage` (the same one Claude Code's
   `/status` uses).
@@ -20,11 +21,13 @@ vulnerability. Every claim here is verifiable in the source.
 
 ### Keychain (read-only)
 - Exactly one item: generic-password service `Claude Code-credentials`.
-- Uses `SecItemCopyMatching` with `kSecReturnData` (a read). It never adds,
-  updates, or deletes Keychain items, and never reads any other item.
-- macOS gates this. The first time, you see the standard
-  *"AIUsageBar wants to use … Claude Code-credentials"* dialog. Nothing is read
-  unless you click **Allow**.
+- Read by running Apple's own tool:
+  `/usr/bin/security find-generic-password -w -s "Claude Code-credentials"`.
+  It never adds, updates, or deletes Keychain items, and never reads any other
+  item.
+- Because `security` is Apple-signed and in the item's ACL partition, the read
+  succeeds **without a GUI prompt** — the same approach other CLI usage monitors
+  use. You can still revoke access anytime in **Keychain Access**.
 
 ### Network
 - One host only: `api.anthropic.com`. One request: `GET /api/oauth/usage`.
@@ -45,7 +48,8 @@ vulnerability. Every claim here is verifiable in the source.
 - No reading of other apps' data or any other Keychain item.
 - No background data collection or exfiltration.
 - No auto-updater that downloads and executes code.
-- No privilege escalation, no `sudo`, no shell/process spawning.
+- No privilege escalation and no `sudo`. The only subprocess it runs is Apple's
+  read-only `/usr/bin/security` (to read your Claude token without a prompt).
 
 ## Credential handling
 

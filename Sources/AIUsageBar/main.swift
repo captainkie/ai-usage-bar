@@ -7,6 +7,11 @@ if ProcessInfo.processInfo.environment["AIUSAGEBAR_PRINT"] == "1" {
     exit(0)
 }
 
+if let shotsDir = ProcessInfo.processInfo.environment["AIUSAGEBAR_SHOTS"], !shotsDir.isEmpty {
+    MainActor.assumeIsolated { renderShots(to: shotsDir) }
+    exit(0)
+}
+
 // Menu-bar-only app: no Dock icon, no main window.
 // Program start is already on the main thread, so asserting main-actor
 // isolation here is safe and lets us touch the @MainActor UI types.

@@ -91,11 +91,20 @@ struct PanelView: View {
                 Text("Claude Code").font(.subheadline.weight(.semibold))
                 Spacer()
                 if settings.showModel, let model = viewModel.modelName {
-                    Text(model)
-                        .font(.caption.weight(.medium))
-                        .padding(.horizontal, 8).padding(.vertical, 3)
-                        .background(Color.primary.opacity(0.07), in: Capsule())
-                        .foregroundStyle(.secondary)
+                    HStack(spacing: 5) {
+                        Text(model)
+                            .font(.caption.weight(.medium))
+                            .padding(.horizontal, 8).padding(.vertical, 3)
+                            .background(Color.primary.opacity(0.07), in: Capsule())
+                            .foregroundStyle(.secondary)
+                        if let effort = viewModel.currentEffort {
+                            Text(effort)
+                                .font(.caption2.weight(.semibold))
+                                .padding(.horizontal, 7).padding(.vertical, 3)
+                                .background(Color(red: 1.0, green: 0.70, blue: 0.14).opacity(0.18), in: Capsule())
+                                .foregroundStyle(Color(red: 0.95, green: 0.62, blue: 0.10))
+                        }
+                    }
                 }
             }
 

@@ -99,7 +99,7 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
         case .loaded:
             var segments: [String] = []
             if settings.showFiveHour { segments.append("5h \(viewModel.sessionPercent)%") }
-            if settings.showWeekly { segments.append("7d \(viewModel.weeklyPercent)%") }
+            if settings.showWeekly { segments.append("wk \(viewModel.weeklyPercent)%") }
             if segments.isEmpty { segments.append("5h \(viewModel.sessionPercent)%") }
 
             let text = NSMutableAttributedString()

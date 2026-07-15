@@ -18,10 +18,10 @@ struct TouchBarReadout: View {
             }
 
             if settings.showFiveHour { gauge("5h", viewModel.sessionWindow) }
-            if settings.showWeekly { gauge("7d", viewModel.weeklyWindow) }
+            if settings.showWeekly { gauge("wk", viewModel.weeklyWindow) }
 
             if settings.showModel, let model = viewModel.modelName {
-                Text(model)
+                Text(viewModel.currentEffort.map { "\(model) · \($0)" } ?? model)
                     .font(.system(size: 10, weight: .medium))
                     .foregroundStyle(.white.opacity(0.6))
             }

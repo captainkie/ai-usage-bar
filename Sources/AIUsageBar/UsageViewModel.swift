@@ -19,6 +19,8 @@ final class UsageViewModel: ObservableObject {
     @Published private(set) var tier: String?
     /// The model you're actually using (from the local transcript, not the API).
     @Published private(set) var currentModel: String?
+    /// The current reasoning-effort level (from Claude Code settings).
+    @Published private(set) var currentEffort: String?
     /// True when the latest refresh failed but we are still showing cached data.
     @Published private(set) var isStale = false
 
@@ -35,11 +37,11 @@ final class UsageViewModel: ObservableObject {
             let usage = try await service.fetchUsage(token: credentials.accessToken)
             plan = credentials.subscriptionType
             tier = credentials.rateLimitTier
-            if let model = await Task.detached(priority: .utility, operation: {
-                currentModelDisplay()
-            }).value {
-                currentModel = model
-            }
+            let local = await Task.detached(priority: .utility, operation: {
+                (currentModelDisplay(), currentEffortDisplay())
+            }).value
+            if let model = local.0 { currentModel = model }
+            currentEffort = local.1
             lastGood = usage
             lastUpdated = Date()
             isStale = false
@@ -89,4 +91,24 @@ final class UsageViewModel: ObservableObject {
 
     var sessionPercent: Int { Int((sessionWindow?.utilization ?? 0).rounded()) }
     var weeklyPercent: Int { Int((weeklyWindow?.utilization ?? 0).rounded()) }
+
+    /// Populates the view model with representative data for generating the
+    /// README screenshots (see AIUSAGEBAR_SHOTS in main.swift).
+    func injectMockForScreenshots() {
+        let iso = ISO8601DateFormatter()
+        iso.formatOptions = [.withInternetDateTime]
+        let ahead: (Double) -> String = { iso.string(from: Date().addingTimeInterval($0)) }
+
+        let usage = UsageResponse(
+            fiveHour: UsageWindow(utilization: 37, resetsAt: ahead(3 * 3600 + 12 * 60)),
+            sevenDay: UsageWindow(utilization: 49, resetsAt: ahead(24 * 3600 + 7 * 3600)),
+            limits: nil
+        )
+        plan = "Max"
+        currentModel = "Opus 4.8"
+        currentEffort = "xHigh"
+        lastUpdated = Date()
+        isStale = false
+        phase = .loaded(usage)
+    }
 }
