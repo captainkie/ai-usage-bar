@@ -25,6 +25,24 @@ anyone else.
 
 ---
 
+## Install
+
+**One line** (downloads the latest release — no Xcode needed):
+
+```sh
+curl -fsSL https://raw.githubusercontent.com/captainkie/ai-usage-bar/main/install.sh | bash
+```
+
+**Homebrew:**
+
+```sh
+brew install captainkie/tap/ai-usage-bar
+```
+
+On first launch, approve the Keychain prompt (**Always Allow**), then look for
+the `● 5h .. 7d ..` item in your menu bar (and the Touch Bar, if your Mac has
+one). Requires macOS 13+ and a signed-in Claude Code.
+
 ## What it does
 
 - **`● 5h 12%  7d 45%`** right in your menu bar — updated automatically.
@@ -62,7 +80,7 @@ platform-specific. On Windows/Linux, Claude Code typically stores its token in
 `~/.claude/.credentials.json` (a file) rather than the Keychain, which such a
 build would read instead. Contributions welcome.
 
-## Build & run
+## Build from source (dev)
 
 Requires macOS 13+, Xcode command-line tools, and a Claude Code login.
 
