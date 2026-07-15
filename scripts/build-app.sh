@@ -36,6 +36,7 @@ rm -rf "$APP"
 mkdir -p "${APP}/Contents/MacOS" "${APP}/Contents/Resources"
 cp "$BIN" "${APP}/Contents/MacOS/AIUsageBar"
 cp Resources/Info.plist "${APP}/Contents/Info.plist"
+[[ -f Resources/AppIcon.icns ]] && cp Resources/AppIcon.icns "${APP}/Contents/Resources/AppIcon.icns"
 
 echo "==> Signing (${SIGN_IDENTITY})"
 codesign --force --options runtime --identifier "$BUNDLE_ID" \

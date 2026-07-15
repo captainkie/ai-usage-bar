@@ -1,6 +1,10 @@
 <div align="center">
 
-# ☕ AI Usage Bar
+<img src="Resources/icon-512.png" width="128" alt="AI Usage Bar logo" />
+
+# AI Usage Bar
+
+<sub>by **Fosivo Labs**</sub>
 
 **Your Claude Code usage limits, live in the macOS menu bar.**
 

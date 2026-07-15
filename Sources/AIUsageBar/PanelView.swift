@@ -1,6 +1,6 @@
 import SwiftUI
 
-let donateURL = URL(string: "https://buymeacoffee.com/captainkiez")!
+let githubURL = URL(string: "https://github.com/captainkie/ai-usage-bar")!
 
 struct PanelView: View {
     @ObservedObject var viewModel: UsageViewModel
@@ -163,12 +163,18 @@ struct PanelView: View {
             }
 
             HStack {
-                Link(destination: donateURL) {
-                    Label("Buy me a coffee", systemImage: "cup.and.saucer.fill")
+                Link(destination: githubURL) {
+                    Label("GitHub", systemImage: "chevron.left.forwardslash.chevron.right")
                         .font(.caption.weight(.medium))
                 }
                 .buttonStyle(.borderless)
-                .foregroundStyle(Color(red: 0.95, green: 0.65, blue: 0.25))
+                .foregroundStyle(.secondary)
+
+                Spacer()
+
+                Text("by Fosivo Labs")
+                    .font(.caption2)
+                    .foregroundStyle(.tertiary)
 
                 Spacer()
 
