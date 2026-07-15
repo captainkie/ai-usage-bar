@@ -5,7 +5,7 @@ import Combine
 @MainActor
 final class AppDelegate: NSObject, NSApplicationDelegate {
     private var statusItem: NSStatusItem!
-    private let popover = NSPopover()
+    private var panelController: PanelWindowController!
     private let viewModel = UsageViewModel()
     private let touchBar = TouchBarController()
     private let floatingBar = FloatingBarController()
@@ -25,9 +25,7 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
             button.action = #selector(togglePopover)
         }
 
-        popover.behavior = .transient
-        popover.animates = true
-        popover.contentViewController = NSHostingController(
+        panelController = PanelWindowController(
             rootView: PanelView(
                 viewModel: viewModel,
                 onRefresh: { [weak self] in self?.refresh() },
@@ -143,14 +141,7 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
     // MARK: - Popover
 
     @objc private func togglePopover() {
-        guard let button = statusItem.button else { return }
-        if popover.isShown {
-            popover.performClose(nil)
-        } else {
-            // Standard status-item anchoring. (Activating the app first can
-            // mis-place the popover on multi-monitor setups.)
-            popover.show(relativeTo: button.bounds, of: button, preferredEdge: .minY)
-        }
+        panelController.toggle(from: statusItem.button)
     }
 
     // MARK: - Windows
@@ -181,7 +172,7 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
     }
 
     private func showSettings() {
-        popover.performClose(nil)
+        panelController.close()
         if settingsWindow == nil {
             settingsWindow = makeWindow(
                 title: "AI Usage Settings",
