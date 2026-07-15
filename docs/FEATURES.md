@@ -42,8 +42,9 @@ screen. Right-click for *Open panel*, *Settings*, or *Hide*.
 
 ## ⚙️ Settings & onboarding
 
-- **First-run scan** detects which AI CLIs you're signed in to
-  (Claude Code today; Codex / Gemini / OpenCode are scanned and ready).
+- **First-run scan** detects which AI CLIs you're signed in to — **Claude Code**
+  (5h + weekly %), **Codex** (usage %), and **Gemini** (signed-in tier). OpenCode
+  is scanned and ready.
 - Choose **what to show**: 5-hour, weekly, model, reset countdowns.
 - Set the **refresh interval** (default 60s, minimum 30s).
 - **Launch at login** with one toggle.

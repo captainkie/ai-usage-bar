@@ -53,7 +53,7 @@ private struct HeroShot: View {
                 Spacer(minLength: 24)
             }
         }
-        .frame(width: 760, height: 470)
+        .frame(width: 760, height: 660)
     }
 
     private var menuBar: some View {
@@ -124,6 +124,8 @@ private struct ShotCard: View {
                     .overlay(RoundedRectangle(cornerRadius: 14, style: .continuous)
                         .strokeBorder(Color.white.opacity(0.07)))
             )
+
+            ForEach(vm.extraCards) { ProviderCardView(card: $0) }
 
             Rectangle().fill(Color.white.opacity(0.08)).frame(height: 1)
 

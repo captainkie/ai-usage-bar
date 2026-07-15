@@ -9,9 +9,9 @@
 **Your Claude Code usage limits, live in the macOS menu bar.**
 
 A tiny, private, open-source menu-bar app that shows your rolling **5-hour**
-and **weekly** Claude Code limits at a glance — with the current model and a
-live reset countdown. Self-hosted: build it yourself, nothing downloaded from
-anyone else.
+and **weekly** Claude Code limits at a glance — plus **Codex** and **Gemini** —
+with the current model and a live reset countdown. Self-hosted: build it
+yourself, nothing downloaded from anyone else.
 
 [![License: MIT](https://img.shields.io/badge/License-MIT-blue.svg)](LICENSE)
 ![Platform](https://img.shields.io/badge/macOS-13%2B-black?logo=apple)
@@ -132,8 +132,8 @@ Full details, threat model, and how to verify it yourself:
 - [x] Menu-bar app, `.app` bundle, launch at login
 - [x] Touch Bar Control Strip item *(uses private `DFRFoundation` — not App Store safe)*
 - [x] Floating bar (draggable, always-on-top pill)
-- [ ] Codex, Gemini, OpenCode providers *(needs those CLIs installed to wire up)*
-- [ ] Automatic OAuth token refresh
+- [x] **Codex** (usage %) and **Gemini** (signed-in tier) providers
+- [ ] OpenCode provider
 - [ ] Notarized release download
 
 ## Project layout

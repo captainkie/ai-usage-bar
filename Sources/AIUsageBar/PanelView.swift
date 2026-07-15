@@ -13,6 +13,7 @@ struct PanelView: View {
         VStack(alignment: .leading, spacing: 16) {
             header
             content
+            ForEach(viewModel.extraCards) { ProviderCardView(card: $0) }
             Divider().opacity(0.5)
             footer
         }
@@ -205,5 +206,91 @@ struct ProgressBar: View {
             }
         }
         .frame(height: 9)
+    }
+}
+
+/// A card for an extra provider (Codex / Gemini).
+struct ProviderCardView: View {
+    let card: ProviderCard
+    @ObservedObject private var settings = Settings.shared
+
+    var body: some View {
+        VStack(alignment: .leading, spacing: 12) {
+            HStack {
+                Circle().fill(dotColor).frame(width: 7, height: 7)
+                Text(card.provider.displayName).font(.subheadline.weight(.semibold))
+                Spacer()
+                if let note = card.note {
+                    Text(note)
+                        .font(.caption.weight(.medium))
+                        .padding(.horizontal, 8).padding(.vertical, 3)
+                        .background(Color.primary.opacity(0.07), in: Capsule())
+                        .foregroundStyle(.secondary)
+                }
+            }
+
+            if let error = card.error {
+                Text(error).font(.caption).foregroundStyle(.secondary)
+            } else if card.gauges.isEmpty {
+                Text("Signed in").font(.caption).foregroundStyle(.secondary)
+            } else {
+                ForEach(card.gauges) { gauge in
+                    GaugeBar(title: fullLabel(gauge.label), percent: gauge.percent,
+                             resetAt: gauge.resetAt, showReset: settings.showResetCountdown)
+                }
+            }
+        }
+        .padding(14)
+        .background(
+            RoundedRectangle(cornerRadius: 14, style: .continuous)
+                .fill(Color.primary.opacity(0.04))
+                .overlay(RoundedRectangle(cornerRadius: 14, style: .continuous)
+                    .strokeBorder(Color.primary.opacity(0.06), lineWidth: 1))
+        )
+    }
+
+    private var dotColor: Color {
+        switch card.provider {
+        case .codex:  return Color(red: 0.30, green: 0.80, blue: 0.55)
+        case .gemini: return Color(red: 0.36, green: 0.56, blue: 0.96)
+        default:      return .secondary
+        }
+    }
+
+    private func fullLabel(_ short: String) -> String {
+        switch short {
+        case "5h": return "5-hour"
+        case "wk": return "Weekly"
+        case "mo": return "Monthly"
+        default:   return short
+        }
+    }
+}
+
+/// A labelled gauge from primitive values (used by extra providers).
+struct GaugeBar: View {
+    let title: String
+    let percent: Double
+    let resetAt: Date?
+    var showReset = true
+
+    var body: some View {
+        VStack(alignment: .leading, spacing: 5) {
+            HStack(alignment: .firstTextBaseline) {
+                Text(title).font(.subheadline).foregroundStyle(.secondary)
+                Spacer()
+                Text("\(Int(percent.rounded()))%")
+                    .font(.subheadline.weight(.semibold).monospacedDigit())
+                    .foregroundStyle(severityColor(percent))
+            }
+            ProgressBar(fraction: percent / 100, color: severityColor(percent))
+            if showReset, let reset = resetAt {
+                TimelineView(.periodic(from: .now, by: 1)) { context in
+                    Label("resets in \(formatCountdown(to: reset, now: context.date))",
+                          systemImage: "clock")
+                        .font(.caption2).foregroundStyle(.tertiary)
+                }
+            }
+        }
     }
 }

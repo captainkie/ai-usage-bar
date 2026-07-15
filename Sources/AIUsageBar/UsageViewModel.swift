@@ -23,6 +23,8 @@ final class UsageViewModel: ObservableObject {
     @Published private(set) var currentEffort: String?
     /// True when the latest refresh failed but we are still showing cached data.
     @Published private(set) var isStale = false
+    /// Additional providers (Codex / Gemini) shown as extra panel cards.
+    @Published private(set) var extraCards: [ProviderCard] = []
 
     private var lastGood: UsageResponse?
     private let service = UsageService()
@@ -55,6 +57,20 @@ final class UsageViewModel: ObservableObject {
                 phase = .loaded(cached)
             } else {
                 phase = .failed(kind, Self.message(for: error, kind: kind))
+            }
+        }
+
+        // Extra providers (Codex / Gemini) — independent of Claude's result.
+        let wantCodex = Settings.shared.isEnabled(.codex)
+        let wantGemini = Settings.shared.isEnabled(.gemini)
+        extraCards = await withTaskGroup(of: ProviderCard.self) { group in
+            if wantCodex { group.addTask { await CodexService().fetch() } }
+            if wantGemini { group.addTask { await GeminiService().fetch() } }
+            var cards: [ProviderCard] = []
+            for await card in group { cards.append(card) }
+            return cards.sorted {
+                (Provider.allCases.firstIndex(of: $0.provider) ?? 99)
+                    < (Provider.allCases.firstIndex(of: $1.provider) ?? 99)
             }
         }
     }
@@ -110,5 +126,12 @@ final class UsageViewModel: ObservableObject {
         lastUpdated = Date()
         isStale = false
         phase = .loaded(usage)
+        extraCards = [
+            ProviderCard(provider: .codex,
+                         gauges: [UsageGauge(label: "mo", percent: 5,
+                                             resetAt: Date().addingTimeInterval(20 * 86_400))],
+                         note: "Free"),
+            ProviderCard(provider: .gemini, note: "Gemini Code Assist · unlimited"),
+        ]
     }
 }

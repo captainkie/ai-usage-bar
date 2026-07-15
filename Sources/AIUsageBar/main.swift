@@ -28,6 +28,10 @@ func runSelfTest() {
     Task {
         do {
             print("touchbar: supported=\(TouchBarController.isSupported)")
+            let codex = await CodexService().fetch()
+            print("codex : gauges=\(codex.gauges.map { "\($0.label) \(Int($0.percent))%" }) note=\(codex.note ?? "-") err=\(codex.error ?? "-")")
+            let gemini = await GeminiService().fetch()
+            print("gemini: note=\(gemini.note ?? "-") err=\(gemini.error ?? "-")")
             // The token is ONLY ever read from the Keychain — no other source.
             let credentials = try readClaudeCredentials()
             let usage = try await UsageService().fetchUsage(token: credentials.accessToken)

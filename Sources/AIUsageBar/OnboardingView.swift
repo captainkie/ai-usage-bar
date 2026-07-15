@@ -38,6 +38,12 @@ struct OnboardingView: View {
             .padding(16)
         }
         .frame(width: 440, height: 480)
+        .onAppear {
+            // Default to showing every provider you're already signed in to.
+            for scan in scans where scan.installed && scan.provider.isSupported {
+                settings.setEnabled(scan.provider, true)
+            }
+        }
     }
 
     private var header: some View {

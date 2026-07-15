@@ -17,7 +17,7 @@ enum Provider: String, CaseIterable, Codable, Identifiable {
     }
 
     /// Whether the app can actually show live usage for this provider yet.
-    var isSupported: Bool { self == .claude }
+    var isSupported: Bool { self != .opencode }
 }
 
 struct ProviderScan: Identifiable {
