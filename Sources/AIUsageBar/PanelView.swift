@@ -2,11 +2,6 @@ import SwiftUI
 
 let githubURL = URL(string: "https://github.com/captainkie/ai-usage-bar")!
 
-private struct PanelHeightKey: PreferenceKey {
-    static var defaultValue: CGFloat = 0
-    static func reduce(value: inout CGFloat, nextValue: () -> CGFloat) { value = nextValue() }
-}
-
 struct PanelView: View {
     @ObservedObject var viewModel: UsageViewModel
     @ObservedObject private var settings = Settings.shared
@@ -14,34 +9,17 @@ struct PanelView: View {
     var onOpenSettings: () -> Void
     var onQuit: () -> Void
 
-    @State private var cardsHeight: CGFloat = 260
-
-    /// Cap the scrollable area to the screen so a tall multi-provider panel
-    /// never overflows past the top of the display.
-    private var maxCardsHeight: CGFloat {
-        max(180, (NSScreen.main?.visibleFrame.height ?? 800) - 260)
-    }
-
     var body: some View {
-        VStack(alignment: .leading, spacing: 14) {
+        VStack(alignment: .leading, spacing: 16) {
             header
-            ScrollView(.vertical, showsIndicators: false) {
-                VStack(alignment: .leading, spacing: 16) {
-                    content
-                    ForEach(viewModel.extraCards) { ProviderCardView(card: $0) }
-                }
-                .background(GeometryReader { geo in
-                    Color.clear.preference(key: PanelHeightKey.self, value: geo.size.height)
-                })
-            }
-            .frame(height: min(cardsHeight, maxCardsHeight))
+            content
+            ForEach(viewModel.extraCards) { ProviderCardView(card: $0) }
             Divider().opacity(0.5)
             footer
         }
         .padding(18)
         .frame(width: 320)
         .background(.regularMaterial)
-        .onPreferenceChange(PanelHeightKey.self) { cardsHeight = $0 }
     }
 
     // MARK: Header
