@@ -4,6 +4,7 @@ import SwiftUI
 /// over the whole Touch Bar (system-modal). Touch Bar is always dark.
 struct TouchBarReadout: View {
     @ObservedObject var viewModel: UsageViewModel
+    @ObservedObject private var settings = Settings.shared
 
     var body: some View {
         HStack(spacing: 16) {
@@ -16,10 +17,10 @@ struct TouchBarReadout: View {
                     .foregroundStyle(.white)
             }
 
-            gauge("5h", viewModel.sessionWindow)
-            gauge("7d", viewModel.weeklyWindow)
+            if settings.showFiveHour { gauge("5h", viewModel.sessionWindow) }
+            if settings.showWeekly { gauge("7d", viewModel.weeklyWindow) }
 
-            if let model = viewModel.modelName {
+            if settings.showModel, let model = viewModel.modelName {
                 Text(model)
                     .font(.system(size: 10, weight: .medium))
                     .foregroundStyle(.white.opacity(0.6))
@@ -48,7 +49,7 @@ struct TouchBarReadout: View {
                 .font(.system(size: 11, weight: .semibold).monospacedDigit())
                 .foregroundStyle(.white)
 
-            if let reset = parseISODate(window?.resetsAt) {
+            if settings.showResetCountdown, let reset = parseISODate(window?.resetsAt) {
                 TimelineView(.periodic(from: .now, by: 30)) { context in
                     Text(formatCountdown(to: reset, now: context.date))
                         .font(.system(size: 9).monospacedDigit())
