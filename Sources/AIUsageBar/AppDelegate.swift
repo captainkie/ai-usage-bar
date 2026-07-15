@@ -68,7 +68,9 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
     // MARK: - Data
 
     private func tick() {
-        let interval = Double(max(Settings.minRefresh, settings.refreshSeconds))
+        var interval = Double(max(Settings.minRefresh, settings.refreshSeconds))
+        // Back off while rate-limited so we don't prolong a 429.
+        if case .failed(.transient, _) = viewModel.phase { interval = max(interval, 300) }
         if Date().timeIntervalSince(lastRefresh) >= interval { refresh() }
     }
 
@@ -145,9 +147,9 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
         if popover.isShown {
             popover.performClose(nil)
         } else {
-            NSApp.activate(ignoringOtherApps: true)
+            // Standard status-item anchoring. (Activating the app first can
+            // mis-place the popover on multi-monitor setups.)
             popover.show(relativeTo: button.bounds, of: button, preferredEdge: .minY)
-            popover.contentViewController?.view.window?.makeKey()
         }
     }
 
