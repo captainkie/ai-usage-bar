@@ -40,6 +40,8 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
         touchBar.install(viewModel: viewModel)
 
         floatingBar.setViewModel(viewModel)
+        floatingBar.onOpenPanel = { [weak self] in self?.togglePopover() }
+        floatingBar.onOpenSettings = { [weak self] in self?.showSettings() }
         floatingBar.setVisible(settings.showFloatingBar)
 
         // Re-render the menu bar when display settings change.

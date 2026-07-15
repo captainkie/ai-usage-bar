@@ -8,6 +8,9 @@ final class FloatingBarController: NSObject, NSWindowDelegate {
     private weak var viewModel: UsageViewModel?
     private let positionKey = "floatingBarOrigin"
 
+    var onOpenPanel: () -> Void = {}
+    var onOpenSettings: () -> Void = {}
+
     func setViewModel(_ viewModel: UsageViewModel) {
         self.viewModel = viewModel
     }
@@ -24,7 +27,10 @@ final class FloatingBarController: NSObject, NSWindowDelegate {
         if let panel { return panel }
         guard let viewModel else { return nil }
 
-        let hosting = NSHostingView(rootView: FloatingBarView(viewModel: viewModel))
+        let hosting = NSHostingView(rootView: FloatingBarView(
+            viewModel: viewModel,
+            onOpenPanel: { [weak self] in self?.onOpenPanel() },
+            onOpenSettings: { [weak self] in self?.onOpenSettings() }))
         hosting.setFrameSize(hosting.fittingSize)
 
         let panel = NSPanel(

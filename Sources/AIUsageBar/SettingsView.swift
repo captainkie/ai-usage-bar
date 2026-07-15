@@ -40,10 +40,25 @@ struct SettingsView: View {
                             if !LoginItem.setEnabled(newValue) { launchAtLogin = LoginItem.isEnabled }
                         }
                 }
+
+                section("About") {
+                    Text("AI Usage \(appVersion) · by Fosivo Labs")
+                        .font(.caption).foregroundStyle(.secondary)
+                    HStack(spacing: 14) {
+                        Link("GitHub", destination: githubURL)
+                        Link("Sponsor", destination: URL(string: "https://github.com/sponsors/captainkie")!)
+                        Link("Buy me a coffee", destination: URL(string: "https://buymeacoffee.com/captainkiez")!)
+                    }
+                    .font(.caption)
+                }
             }
             .padding(20)
         }
-        .frame(width: 420, height: 540)
+        .frame(width: 420, height: 580)
+    }
+
+    private var appVersion: String {
+        "v" + (Bundle.main.infoDictionary?["CFBundleShortVersionString"] as? String ?? "dev")
     }
 
     @ViewBuilder

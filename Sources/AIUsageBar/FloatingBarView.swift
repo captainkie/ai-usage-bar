@@ -4,8 +4,20 @@ import SwiftUI
 struct FloatingBarView: View {
     @ObservedObject var viewModel: UsageViewModel
     @ObservedObject private var settings = Settings.shared
+    var onOpenPanel: () -> Void = {}
+    var onOpenSettings: () -> Void = {}
 
     var body: some View {
+        content
+            .contextMenu {
+                Button("Open panel", action: onOpenPanel)
+                Button("Settings…", action: onOpenSettings)
+                Divider()
+                Button("Hide floating bar") { Settings.shared.showFloatingBar = false }
+            }
+    }
+
+    private var content: some View {
         HStack(spacing: 12) {
             GaugeMark(size: 18)
 
