@@ -13,7 +13,7 @@ jobs:
     name: build
     runs-on: macos-latest
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v7
       # Executable SwiftPM target (menu-bar app), zero dependencies — a clean
       # `swift build` is the compile gate for every change.
       - name: swift build
