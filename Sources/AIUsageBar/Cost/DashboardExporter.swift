@@ -56,7 +56,15 @@ enum DashboardExporter {
         do { try html(events: events, budgets: budgets).write(to: url, atomically: true, encoding: .utf8) }
         catch { return nil }
         #if canImport(AppKit)
-        NSWorkspace.shared.open(url)
+        // Open in the default web *browser*, not the default handler for .html
+        // files (which might be a code editor like VS Code). Resolve the browser
+        // by asking who opens web URLs, then open the local file with it.
+        if let browser = NSWorkspace.shared.urlForApplication(toOpen: URL(string: "https://www.apple.com")!) {
+            NSWorkspace.shared.open([url], withApplicationAt: browser,
+                                    configuration: NSWorkspace.OpenConfiguration())
+        } else {
+            NSWorkspace.shared.open(url)
+        }
         #endif
         return url
     }

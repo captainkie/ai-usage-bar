@@ -34,6 +34,13 @@ struct PanelView: View {
                 Text(subtitle).font(.caption).foregroundStyle(.secondary)
             }
             Spacer()
+            Button(action: onOpenCost) {
+                Image(systemName: "dollarsign.circle.fill").font(.system(size: 14, weight: .semibold))
+            }
+            .buttonStyle(.borderless)
+            .foregroundStyle(Color(red: 0.85, green: 0.55, blue: 0.35))
+            .help("Cost dashboard")
+
             Button(action: onRefresh) {
                 Image(systemName: "arrow.clockwise").font(.system(size: 12, weight: .semibold))
             }
@@ -138,11 +145,6 @@ struct PanelView: View {
                 Link(destination: githubURL) {
                     Label("GitHub", systemImage: "chevron.left.forwardslash.chevron.right")
                         .font(.caption.weight(.medium))
-                }
-                .buttonStyle(.borderless).foregroundStyle(.secondary)
-
-                Button(action: onOpenCost) {
-                    Label("Cost", systemImage: "dollarsign.circle").font(.caption.weight(.medium))
                 }
                 .buttonStyle(.borderless).foregroundStyle(.secondary)
 
