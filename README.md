@@ -10,8 +10,9 @@
 
 A tiny, private, open-source menu-bar app that shows your rolling **5-hour**
 and **weekly** Claude Code limits at a glance — plus **Codex** and **Gemini** —
-with the current model and a live reset countdown. Self-hosted: build it
-yourself, nothing downloaded from anyone else.
+with the current model and a live reset countdown. New: a local-first
+**cost dashboard** that shows where your spend goes, by project. Self-hosted:
+build it yourself, nothing downloaded from anyone else.
 
 [![License: MIT](https://img.shields.io/badge/License-MIT-blue.svg)](LICENSE)
 ![Platform](https://img.shields.io/badge/macOS-13%2B-black?logo=apple)
@@ -34,7 +35,15 @@ yourself, nothing downloaded from anyone else.
 
 <img src="docs/floatingbar.png" width="480" alt="Floating bar" />
 
-📖 **[Feature tour →](docs/FEATURES.md)**
+<br/><br/>
+
+**💸 New — cost tracking:** see exactly where your AI spend goes, by project, with monthly budgets.
+
+<img src="docs/cost-dashboard.png" width="720" alt="Cost dashboard — spend by project, time windows, and monthly budgets" />
+
+<img src="docs/cost-menubar.png" width="260" alt="Cost menu-bar view" />
+
+🌐 **[Try the live demo →](https://captainkie.github.io/ai-usage-bar/)** · 📖 **[Feature tour →](docs/FEATURES.md)**
 
 </div>
 
@@ -70,6 +79,10 @@ Apple's own `security` tool. Requires macOS 13+ and a signed-in Claude Code.
   and live **"resets in 1h 14m"** countdowns.
 - **Touch Bar** — a persistent item in the Control Strip on Macs that have one.
 - **Launch at login** toggle.
+- **💸 Cost tracking** — a local-first dashboard of your AI spend by **project**
+  (Claude · Codex · Gemini), over today / 7 days / month / all, with per-project
+  monthly **budgets** and alerts. Open it in a window or your browser.
+  [Live demo →](https://captainkie.github.io/ai-usage-bar/)
 - **Private by design** — the only network call is to `api.anthropic.com`.
   Your token never leaves your Mac.
 
@@ -138,6 +151,7 @@ Full details, threat model, and how to verify it yourself:
 - [x] Touch Bar Control Strip item *(uses private `DFRFoundation` — not App Store safe)*
 - [x] Floating bar (draggable, always-on-top pill)
 - [x] **Codex** (usage %) and **Gemini** (signed-in tier) providers
+- [ ] **Cost tracking** — spend by project, time windows, monthly budgets *([demo](https://captainkie.github.io/ai-usage-bar/) live; app integration in progress)*
 - [ ] OpenCode provider
 - [ ] Notarized release download
 
@@ -166,6 +180,18 @@ If this saves you a few `/status` checks:
 - ☕ **[Buy me a coffee](https://buymeacoffee.com/captainkiez)**
 
 Thank you! 🙏
+
+## Credits & inspiration
+
+The cost-tracking feature draws **design inspiration** from two excellent
+open-source projects. AI Usage Bar does **not** connect to, bundle, or depend on
+either — it independently reads **your own** local session files and prices them
+with its own bundled table:
+
+- **[CodeBurn](https://github.com/getagentseal/codeburn)** — a local-first AI
+  token & cost tracker across many tools.
+- **[onWatch](https://github.com/onllm-dev/onwatch)** — an open-source, local
+  AI API quota tracker.
 
 ## Legal
 

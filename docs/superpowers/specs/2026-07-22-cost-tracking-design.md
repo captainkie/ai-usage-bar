@@ -199,7 +199,7 @@ Budgets: Settings(UserDefaults) → Budget.status(monthSpend, limit) → progres
 - **By project** rows: cost + (if budget set) a thin progress bar + %, colored normal/warn/over.
   Row click filters the entire view to that project; `＋set` opens the budget editor for that project.
 - Collapsible **By model** (top 3) to stay minimal.
-- Footer: **Open in browser**, **Edit budgets**, and a small "Inspired by CodeBurn & onWatch" credit link.
+- Footer: **Open in browser**, **Edit budgets** (no inspiration credit here — README only).
 - If `unpricedModels` non-empty, a subtle one-line hint.
 
 ### 6.3 `BudgetSettingsView.swift`
@@ -212,7 +212,8 @@ Budgets: Settings(UserDefaults) → Budget.status(monthSpend, limit) → progres
 ### 6.4 Static web dashboard (opened in browser)
 - Light theme echoing CodeBurn's web look, but trimmed: window tabs, big cost number, a few stat cards
   (cost, tokens, calls, sessions), a daily SVG bar chart, a **By Project** table with budget bars, and a
-  **By Model** table. Footer credit to CodeBurn & onWatch. Fully offline/self-contained.
+  **By Model** table. A "Local only" note in the footer (no inspiration credit — README only).
+  Fully offline/self-contained.
 
 ## 7. Budgets & alerts
 
@@ -233,10 +234,12 @@ Budgets: Settings(UserDefaults) → Budget.status(monthSpend, limit) → progres
 
 ## 9. Credits (required)
 
-- **README**: new "Credits / Inspiration" section — CodeBurn
+- **README only**: a "Credits / Inspiration" section — CodeBurn
   (`https://github.com/getagentseal/codeburn`, local-first AI cost tracker) and onWatch
-  (`https://github.com/onllm-dev/onwatch`, open-source AI API quota tracker).
-- **In-app**: credit line in the cost window footer and the web dashboard footer.
+  (`https://github.com/onllm-dev/onwatch`, open-source AI API quota tracker). The app **does not
+  connect to, bundle, or call** either project — it independently reads the same local session files
+  and prices them with its own bundled table. **No inspiration credit in the app UI or web dashboard**
+  (per user request) — keep those surfaces clean.
 
 ## 10. Testing
 
