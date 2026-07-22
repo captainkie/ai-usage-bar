@@ -172,7 +172,7 @@ Full details, threat model, and how to verify it yourself:
 - [x] Touch Bar Control Strip item *(uses private `DFRFoundation` — not App Store safe)*
 - [x] Floating bar (draggable, always-on-top pill)
 - [x] **Codex** (usage %) and **Gemini** (signed-in tier) providers
-- [ ] **Cost tracking** — spend by project, time windows, monthly budgets *([demo](https://captainkie.github.io/ai-usage-bar/) live; app integration in progress)*
+- [x] **Cost tracking** — spend by project, time windows, monthly budgets, web dashboard *([demo](https://captainkie.github.io/ai-usage-bar/))*
 - [ ] OpenCode provider
 - [ ] Notarized release download
 

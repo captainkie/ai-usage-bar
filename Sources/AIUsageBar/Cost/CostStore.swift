@@ -17,6 +17,7 @@ final class CostStore: ObservableObject {
     private let cache = CostCache()
     private let budgets = BudgetStore()
     private let settings = Settings.shared
+    private var lastBudgetCheck = Date.distantPast
 
     /// Full scan on a background task, then recompute + budget check.
     func refresh() {
@@ -32,9 +33,13 @@ final class CostStore: ObservableObject {
         }
     }
 
-    /// Cheap budget check (called by AppDelegate's tick even when the cost window
-    /// is closed) so alerts fire in the background.
+    /// Background budget check (called on the app's refresh cadence even when the
+    /// cost window is closed). Scanning is expensive, so skip it entirely unless
+    /// alerts are on AND at least one budget is set, and throttle to ~10 minutes.
     func backgroundBudgetCheck() {
+        guard settings.budgetAlerts, !budgets.allBudgets().isEmpty,
+              Date().timeIntervalSince(lastBudgetCheck) > 600 else { return }
+        lastBudgetCheck = Date()
         Task.detached(priority: .utility) {
             let events = SessionParser.scanAll()
             await MainActor.run { self.events = events; self.checkBudgets() }
