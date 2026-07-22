@@ -5,7 +5,7 @@ struct UsageEvent {
     let provider: Provider
     let timestamp: Date
     let model: String
-    let project: String        // canonical key (sanitized cwd, or "gemini:<hash>")
+    let project: String        // canonical key: raw cwd path, or "gemini:<hash>"
     let sessionId: String
     let input: Int             // uncached input tokens
     let output: Int            // output (+ reasoning/thoughts folded in)
@@ -15,17 +15,13 @@ struct UsageEvent {
     var totalTokens: Int { input + output + cacheWrite + cacheRead }
 }
 
-/// "/Users/x/proj" -> "Users-x-proj" (matches Claude's projects/<slug> scheme).
-func sanitizeProject(_ cwd: String) -> String {
-    var s = cwd
-    while s.hasPrefix("/") { s.removeFirst() }
-    return s.replacingOccurrences(of: "/", with: "-")
-}
-
-/// A short, human label for display: last path component, or a trimmed gemini hash.
+/// A short, human label for display: the working directory's last path
+/// component, or a trimmed gemini hash. `project` is the raw cwd path, so this
+/// is a clean, reversible mapping (no lossy de-sanitizing of a "-"-joined slug).
 func projectLabel(_ project: String) -> String {
     if project.hasPrefix("gemini:") {
         return "gemini:" + project.dropFirst("gemini:".count).prefix(6)
     }
-    return project.split(separator: "-").last.map(String.init) ?? project
+    let label = URL(fileURLWithPath: project).lastPathComponent
+    return label.isEmpty ? project : label
 }

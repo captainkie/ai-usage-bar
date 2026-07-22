@@ -2,19 +2,11 @@ import XCTest
 @testable import AIUsageBar
 
 final class UsageEventTests: XCTestCase {
-    func testSanitizeCwd() {
-        XCTAssertEqual(sanitizeProject("/Users/x/Documents/work-hobby/ai-usage-bar"),
-                       "Users-x-Documents-work-hobby-ai-usage-bar")
-        XCTAssertEqual(sanitizeProject("/a/b"), "a-b")
-    }
-    func testProjectLabelShortensToLastPathComponent() {
-        // NOTE: sanitizeProject flattens "/" to "-", so a directory name that
-        // itself contains hyphens (like "ai-usage-bar") is indistinguishable
-        // from path separators once flattened. The last-dash-segment split
-        // below can only recover "bar" here, not the full original directory
-        // name — that's the actual (and only correct) behavior of the given
-        // split(separator:"-").last algorithm.
-        XCTAssertEqual(projectLabel("Users-x-Documents-work-hobby-ai-usage-bar"), "bar")
+    func testProjectLabelIsLastPathComponent() {
+        // project is the raw cwd path, so the label is a clean, reversible
+        // last-path-component (a dir name with hyphens survives intact).
+        XCTAssertEqual(projectLabel("/Users/x/Documents/work-hobby/ai-usage-bar"), "ai-usage-bar")
+        XCTAssertEqual(projectLabel("/a/b"), "b")
         XCTAssertEqual(projectLabel("gemini:abcdef123456"), "gemini:abcdef")
     }
     func testTotalTokens() {

@@ -109,13 +109,9 @@ import XCTest
 @testable import AIUsageBar
 
 final class UsageEventTests: XCTestCase {
-    func testSanitizeCwd() {
-        XCTAssertEqual(sanitizeProject("/Users/x/Documents/work-hobby/ai-usage-bar"),
-                       "Users-x-Documents-work-hobby-ai-usage-bar")
-        XCTAssertEqual(sanitizeProject("/a/b"), "a-b")
-    }
-    func testProjectLabelShortensToLastPathComponent() {
-        XCTAssertEqual(projectLabel("Users-x-Documents-work-hobby-ai-usage-bar"), "ai-usage-bar")
+    func testProjectLabelIsLastPathComponent() {
+        XCTAssertEqual(projectLabel("/Users/x/Documents/work-hobby/ai-usage-bar"), "ai-usage-bar")
+        XCTAssertEqual(projectLabel("/a/b"), "b")
         XCTAssertEqual(projectLabel("gemini:abcdef123456"), "gemini:abcdef")
     }
     func testTotalTokens() {
@@ -138,7 +134,7 @@ struct UsageEvent {
     let provider: Provider
     let timestamp: Date
     let model: String
-    let project: String        // canonical key (sanitized cwd, or "gemini:<hash>")
+    let project: String        // canonical key: raw cwd path, or "gemini:<hash>"
     let sessionId: String
     let input: Int             // uncached input tokens
     let output: Int            // output (+ reasoning/thoughts folded in)
@@ -148,19 +144,15 @@ struct UsageEvent {
     var totalTokens: Int { input + output + cacheWrite + cacheRead }
 }
 
-/// "/Users/x/proj" -> "Users-x-proj" (matches Claude's projects/<slug> scheme).
-func sanitizeProject(_ cwd: String) -> String {
-    var s = cwd
-    while s.hasPrefix("/") { s.removeFirst() }
-    return s.replacingOccurrences(of: "/", with: "-")
-}
-
-/// A short, human label for display: last path component, or a trimmed gemini hash.
+/// A short, human label for display: the working directory's last path
+/// component, or a trimmed gemini hash. `project` is the raw cwd path, so this
+/// is a clean, reversible mapping (no lossy de-sanitizing of a "-"-joined slug).
 func projectLabel(_ project: String) -> String {
     if project.hasPrefix("gemini:") {
         return "gemini:" + project.dropFirst("gemini:".count).prefix(6)
     }
-    return project.split(separator: "-").last.map(String.init) ?? project
+    let label = URL(fileURLWithPath: project).lastPathComponent
+    return label.isEmpty ? project : label
 }
 ```
 
@@ -330,7 +322,7 @@ final class ClaudeParserTests: XCTestCase {
         let e = SessionParser.parseClaude(line: line, fallbackProject: "fb")
         XCTAssertEqual(e?.provider, .claude)
         XCTAssertEqual(e?.model, "claude-opus-4-8")
-        XCTAssertEqual(e?.project, "Users-x-proj")
+        XCTAssertEqual(e?.project, "/Users/x/proj")
         XCTAssertEqual(e?.input, 100); XCTAssertEqual(e?.output, 200)
         XCTAssertEqual(e?.cacheWrite, 50); XCTAssertEqual(e?.cacheRead, 30)
     }
@@ -378,7 +370,7 @@ enum SessionParser {
         if input + output + cw + cr == 0 { return nil }
 
         let ts = parseISODate(obj["timestamp"] as? String) ?? Date()
-        let project = (obj["cwd"] as? String).map(sanitizeProject) ?? fallbackProject
+        let project = (obj["cwd"] as? String) ?? fallbackProject
         let sid = obj["sessionId"] as? String ?? ""
         return UsageEvent(provider: .claude, timestamp: ts, model: model, project: project,
                           sessionId: sid, input: input, output: output, cacheWrite: cw, cacheRead: cr)
@@ -419,7 +411,7 @@ final class CodexParserTests: XCTestCase {
         let e = events[0]
         XCTAssertEqual(e.provider, .codex)
         XCTAssertEqual(e.model, "gpt-5-codex")
-        XCTAssertEqual(e.project, "Users-x-proj")
+        XCTAssertEqual(e.project, "/Users/x/proj")
         XCTAssertEqual(e.input, 100)      // 120 - 20 cached
         XCTAssertEqual(e.cacheRead, 20)
         XCTAssertEqual(e.output, 120)     // 80 + 40 reasoning
@@ -452,7 +444,7 @@ extension SessionParser {
             else { continue }
 
             if type == "session_meta" {
-                if let cwd = payload["cwd"] as? String { project = sanitizeProject(cwd) }
+                if let cwd = payload["cwd"] as? String { project = cwd }
                 model = payload["model"] as? String ?? model
             } else if type == "event_msg", (payload["type"] as? String) == "token_count",
                       let info = payload["info"] as? [String: Any],
@@ -597,7 +589,7 @@ final class ScanTests: XCTestCase {
 
         let events = SessionParser.scanClaude(root: tmp)
         XCTAssertEqual(events.count, 1)
-        XCTAssertEqual(events[0].project, "Users-x-proj")
+        XCTAssertEqual(events[0].project, "/Users/x/proj")
     }
 }
 ```
@@ -1116,8 +1108,8 @@ import XCTest
 final class DashboardExporterTests: XCTestCase {
     func testHtmlIsSelfContainedAndEmbedsData() {
         let events = [UsageEvent(provider: .claude, timestamp: Date(), model: "claude-opus-4-8",
-            project: "Users-x-ai-usage-bar", sessionId: "s", input: 10, output: 20, cacheWrite: 0, cacheRead: 0)]
-        let html = DashboardExporter.html(events: events, budgets: ["Users-x-ai-usage-bar": 20])
+            project: "/Users/x/ai-usage-bar", sessionId: "s", input: 10, output: 20, cacheWrite: 0, cacheRead: 0)]
+        let html = DashboardExporter.html(events: events, budgets: ["/Users/x/ai-usage-bar": 20])
         XCTAssertTrue(html.contains("__AUB_DATA__"))
         XCTAssertTrue(html.contains("ai-usage-bar"))         // project label present
         XCTAssertFalse(html.contains("http://"))             // no external requests
