@@ -34,8 +34,14 @@ enum DashboardExporter {
 
     static func html(events: [UsageEvent], budgets: [String: Double]) -> String {
         let obj = payload(events: events, budgets: budgets)
-        let json = (try? JSONSerialization.data(withJSONObject: obj, options: [.sortedKeys]))
+        var json = (try? JSONSerialization.data(withJSONObject: obj, options: [.sortedKeys]))
             .flatMap { String(data: $0, encoding: .utf8) } ?? "{}"
+        // Harden the <script> embed: neutralize a "</script>" breakout and JS line
+        // separators, so an odd project path or model name can't inject markup.
+        for (from, to) in [("<", "\\u003c"), (">", "\\u003e"), ("&", "\\u0026"),
+                           ("\u{2028}", "\\u2028"), ("\u{2029}", "\\u2029")] {
+            json = json.replacingOccurrences(of: from, with: to)
+        }
         return template.replacingOccurrences(of: "/*__AUB_DATA__*/",
                                              with: "window.__AUB_DATA__ = \(json);")
     }
@@ -130,6 +136,7 @@ enum DashboardExporter {
         return parse(k)>=from;
       }
       function money(v){return "$"+v.toLocaleString("en-US",{minimumFractionDigits:2,maximumFractionDigits:2});}
+      function esc(s){return String(s).replace(/[&<>"']/g,function(c){return {"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c];});}
       function monthSpend(){
         var mp={}, mk=latest?latest.slice(0,7):"";
         keys.forEach(function(k){ if(k.slice(0,7)!==mk) return;
@@ -174,12 +181,12 @@ enum DashboardExporter {
           if(lim){var spent=ms[p]||0, f=lim>0?spent/lim:0, pct=Math.round(f*100);
             b='<div class="budget"><div class="track"><div class="fill" style="width:'+Math.min(100,pct)+'%;background:'+budgetColor(f)+'"></div></div>'+
               '<div class="bpct">'+money(spent)+' / '+money(lim)+' · '+pct+'%</div></div>';}
-          return '<div class="row"><div class="t">'+p+'</div><div class="c">'+money(cost)+'</div>'+b+'</div>';
+          return '<div class="row"><div class="t">'+esc(p)+'</div><div class="c">'+money(cost)+'</div>'+b+'</div>';
         }).join("") || '<div class="row"><div class="t" style="color:var(--faint)">No spend</div></div>';
         var mSorted = Object.keys(a.models).sort(function(x,y){return a.models[y]-a.models[x];});
         var mMax=0.001; mSorted.forEach(function(m){mMax=Math.max(mMax,a.models[m]);});
         document.getElementById("models").innerHTML = mSorted.slice(0,6).map(function(m){
-          return '<div class="row"><div class="t">'+m+'</div><div class="c">'+money(a.models[m])+'</div>'+
+          return '<div class="row"><div class="t">'+esc(m)+'</div><div class="c">'+money(a.models[m])+'</div>'+
             '<div class="mtrack"><div class="mfill" style="width:'+(a.models[m]/mMax*100).toFixed(0)+'%"></div></div></div>';
         }).join("") || '<div class="row"><div class="t" style="color:var(--faint)">No spend</div></div>';
       }
