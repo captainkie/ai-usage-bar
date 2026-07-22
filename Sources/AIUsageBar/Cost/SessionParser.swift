@@ -104,3 +104,77 @@ extension SessionParser {
         return out
     }
 }
+
+extension SessionParser {
+    private static var home: URL { FileManager.default.homeDirectoryForCurrentUser }
+
+    /// Read all `~/.claude/projects/**/*.jsonl` (honoring CLAUDE_CONFIG_DIR).
+    static func scanClaude(root override: URL? = nil) -> [UsageEvent] {
+        let root = override ?? (ProcessInfo.processInfo.environment["CLAUDE_CONFIG_DIR"]
+            .map { URL(fileURLWithPath: $0).appendingPathComponent("projects") }
+            ?? home.appendingPathComponent(".claude/projects"))
+        var out: [UsageEvent] = []
+        forEachFile(under: root, ext: "jsonl") { url in
+            let fallback = url.deletingLastPathComponent().lastPathComponent
+            streamLines(url) { line in
+                if let e = parseClaude(line: line, fallbackProject: fallback) { out.append(e) }
+            }
+        }
+        return out
+    }
+
+    /// Read `~/.codex/sessions/**/rollout-*.jsonl` + archived_sessions.
+    static func scanCodex(root override: URL? = nil) -> [UsageEvent] {
+        let base = override ?? (ProcessInfo.processInfo.environment["CODEX_HOME"].map(URL.init(fileURLWithPath:))
+            ?? home.appendingPathComponent(".codex"))
+        var out: [UsageEvent] = []
+        for sub in ["sessions", "archived_sessions"] {
+            forEachFile(under: base.appendingPathComponent(sub), ext: "jsonl") { url in
+                guard url.lastPathComponent.hasPrefix("rollout-") else { return }
+                let lines = (try? String(contentsOf: url, encoding: .utf8))?
+                    .split(separator: "\n").map(String.init) ?? []
+                out.append(contentsOf: parseCodex(lines: lines))
+            }
+        }
+        return out
+    }
+
+    /// Read `~/.gemini/tmp/<hash>/chats/session-*.json[l]`.
+    static func scanGemini(root override: URL? = nil) -> [UsageEvent] {
+        let base = override ?? home.appendingPathComponent(".gemini/tmp")
+        var out: [UsageEvent] = []
+        guard let hashes = try? FileManager.default.contentsOfDirectory(at: base,
+            includingPropertiesForKeys: nil) else { return out }
+        for hashDir in hashes {
+            let project = "gemini:" + hashDir.lastPathComponent
+            forEachFile(under: hashDir.appendingPathComponent("chats"), ext: nil) { url in
+                guard url.lastPathComponent.hasPrefix("session-"),
+                      let contents = try? String(contentsOf: url, encoding: .utf8) else { return }
+                out.append(contentsOf: parseGemini(contents: contents, project: project))
+            }
+        }
+        return out
+    }
+
+    /// All installed providers together.
+    static func scanAll() -> [UsageEvent] {
+        scanClaude() + scanCodex() + scanGemini()
+    }
+
+    // MARK: helpers
+    private static func forEachFile(under root: URL, ext: String?, _ body: (URL) -> Void) {
+        guard let en = FileManager.default.enumerator(at: root,
+            includingPropertiesForKeys: nil, options: [.skipsHiddenFiles]) else { return }
+        for case let url as URL in en {
+            if let ext, url.pathExtension != ext { continue }
+            var isDir: ObjCBool = false
+            FileManager.default.fileExists(atPath: url.path, isDirectory: &isDir)
+            if isDir.boolValue { continue }
+            body(url)
+        }
+    }
+    private static func streamLines(_ url: URL, _ body: (Substring) -> Void) {
+        guard let text = try? String(contentsOf: url, encoding: .utf8) else { return }
+        for line in text.split(separator: "\n") { body(line) }
+    }
+}
