@@ -72,6 +72,27 @@ That's it — the `● 5h .. wk ..` item appears in your menu bar (and the Touch
 Bar, if your Mac has one). **No Keychain prompt** — it reads your token through
 Apple's own `security` tool. Requires macOS 13+ and a signed-in Claude Code.
 
+## Update
+
+To move to the latest version, just install again — your settings are kept.
+
+**Homebrew:**
+
+```sh
+brew upgrade ai-usage-bar
+```
+
+**One-line installer** — re-run it; it always grabs the latest release and
+replaces the app in place:
+
+```sh
+curl -fsSL https://raw.githubusercontent.com/captainkie/ai-usage-bar/main/install.sh | bash
+```
+
+If the app is open, it relaunches on the new version automatically (or click
+**Quit** in the panel first). Not sure you're behind? Compare against the
+[latest release](https://github.com/captainkie/ai-usage-bar/releases/latest).
+
 ## What it does
 
 - **`● 5h 12%  7d 45%`** right in your menu bar — updated automatically.

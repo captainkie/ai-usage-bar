@@ -94,6 +94,8 @@ curl -fsSL https://raw.githubusercontent.com/captainkie/ai-usage-bar/main/instal
 
 or `brew install captainkie/tap/ai-usage-bar` · macOS 13+
 
+Already installed? Update the same way — `brew upgrade ai-usage-bar`, or just re-run the installer above.
+
 💖 [Sponsor](https://github.com/sponsors/captainkie) · ☕ [Buy me a coffee](https://buymeacoffee.com/captainkiez)
 
 </div>
