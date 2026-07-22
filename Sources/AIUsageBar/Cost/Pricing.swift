@@ -28,6 +28,7 @@ final class Pricing {
         "claude-opus-4-8":   m(5, 25, 6.25, 0.50),
         "claude-opus-4-7":   m(5, 25, 6.25, 0.50),
         "claude-opus-4-6":   m(5, 25, 6.25, 0.50),
+        "claude-sonnet-5":   m(2, 10, 2.5, 0.20),
         "claude-sonnet-4-5": m(3, 15, 3.75, 0.30),
         "claude-sonnet-4":   m(3, 15, 3.75, 0.30),
         "claude-haiku-4-5":  m(1, 5, 1.25, 0.10),

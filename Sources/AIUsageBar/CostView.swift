@@ -9,19 +9,25 @@ struct CostView: View {
     private var accent: Color { Color(red: 0.85, green: 0.55, blue: 0.35) }
 
     var body: some View {
-        VStack(alignment: .leading, spacing: 16) {
+        VStack(alignment: .leading, spacing: 14) {
             Picker("", selection: $store.window) {
                 ForEach(Window.allCases) { Text($0.label).tag($0) }
             }.pickerStyle(.segmented).labelsHidden()
 
-            hero
-            if !store.summary.days.isEmpty { chart }
-            projects
-            if showModels && !store.summary.byModel.isEmpty { models }
+            ScrollView {
+                VStack(alignment: .leading, spacing: 16) {
+                    hero
+                    if !store.summary.days.isEmpty { chart }
+                    projects
+                    if showModels && !store.summary.byModel.isEmpty { models }
+                }
+            }
+
+            Divider().opacity(0.5)
             footer
         }
         .padding(18)
-        .frame(width: 460)
+        .frame(width: 460, height: 604)
         .onAppear { store.refresh() }
     }
 
