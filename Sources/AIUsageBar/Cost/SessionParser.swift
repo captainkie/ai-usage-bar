@@ -65,3 +65,42 @@ extension SessionParser {
         return out
     }
 }
+
+extension SessionParser {
+    // MARK: Gemini — a session file is one JSON object (or JSONL of messages)
+    static func parseGemini(contents: String, project: String) -> [UsageEvent] {
+        var messages: [[String: Any]] = []
+        let trimmed = contents.trimmingCharacters(in: .whitespacesAndNewlines)
+        if let data = trimmed.data(using: .utf8),
+           let obj = try? JSONSerialization.jsonObject(with: data) {
+            if let dict = obj as? [String: Any], let msgs = dict["messages"] as? [[String: Any]] {
+                messages = msgs
+            } else if let arr = obj as? [[String: Any]] {
+                messages = arr
+            }
+        }
+        if messages.isEmpty {   // JSONL fallback
+            for line in trimmed.split(separator: "\n") {
+                if let d = line.data(using: .utf8),
+                   let m = try? JSONSerialization.jsonObject(with: d) as? [String: Any] {
+                    messages.append(m)
+                }
+            }
+        }
+
+        var out: [UsageEvent] = []
+        for m in messages where (m["type"] as? String) == "gemini" {
+            guard let t = m["tokens"] as? [String: Any] else { continue }
+            let rawIn = t["input"] as? Int ?? 0
+            let cached = t["cached"] as? Int ?? 0
+            let output = (t["output"] as? Int ?? 0) + (t["thoughts"] as? Int ?? 0) + (t["tool"] as? Int ?? 0)
+            let input = max(0, rawIn - cached)
+            if input + output + cached == 0 { continue }
+            let model = m["model"] as? String ?? "gemini-2.5-pro"
+            let ts = parseISODate(m["timestamp"] as? String) ?? Date()
+            out.append(UsageEvent(provider: .gemini, timestamp: ts, model: model, project: project,
+                sessionId: "", input: input, output: output, cacheWrite: 0, cacheRead: cached))
+        }
+        return out
+    }
+}
