@@ -35,11 +35,15 @@ struct PanelView: View {
             }
             Spacer()
             Button(action: onOpenCost) {
-                Image(systemName: "dollarsign.circle.fill").font(.system(size: 14, weight: .semibold))
+                HStack(spacing: 3) {
+                    Image(systemName: "dollarsign.circle.fill").font(.system(size: 11, weight: .bold))
+                    Text("Cost").font(.caption2.weight(.bold))
+                }
+                .padding(.horizontal, 9).padding(.vertical, 4)
+                .background(Color(red: 0.85, green: 0.55, blue: 0.35).opacity(0.20), in: Capsule())
+                .foregroundStyle(Color(red: 0.85, green: 0.55, blue: 0.35))
             }
-            .buttonStyle(.borderless)
-            .foregroundStyle(Color(red: 0.85, green: 0.55, blue: 0.35))
-            .help("Cost dashboard")
+            .buttonStyle(.plain).help("Cost dashboard")
 
             Button(action: onRefresh) {
                 Image(systemName: "arrow.clockwise").font(.system(size: 12, weight: .semibold))
