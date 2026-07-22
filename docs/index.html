@@ -1,0 +1,388 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>AI Usage Bar — your AI usage &amp; cost, live in the macOS menu bar</title>
+<meta name="description" content="A tiny, private, open-source macOS menu-bar app. Live Claude / Codex / Gemini usage limits, a floating bar, a Touch Bar readout — and local-first cost tracking by project, with budgets." />
+<style>
+  :root{
+    --bg:#131217; --bg2:#0E0D11; --surface:#1D1B21; --surface-2:#252229; --surface-3:#2E2A33;
+    --border:#302C38; --border-strong:#3D3846;
+    --text:#F1EFF4; --dim:#A7A2B1; --faint:#726D7C;
+    --accent:#E39A56; --gold:#F2A81A; --accent-soft:rgba(227,154,86,.14);
+    --claude:#E39A56; --codex:#46C78D; --gemini:#7DA2FF; --green:#4FCB8B;
+    --warn:#EDB13F; --over:#EE746C;
+    --mono:ui-monospace,"SF Mono",Menlo,monospace;
+    --ui:system-ui,-apple-system,"Segoe UI",sans-serif;
+    --shadow:0 1px 2px rgba(0,0,0,.3),0 14px 44px rgba(0,0,0,.38);
+    --maxw:1080px;
+  }
+  *{box-sizing:border-box}
+  html{scroll-behavior:smooth}
+  body{margin:0;background:
+      radial-gradient(1200px 620px at 78% -8%,rgba(227,154,86,.10),transparent 60%),
+      radial-gradient(900px 520px at 8% 4%,rgba(125,162,255,.06),transparent 55%),
+      var(--bg);
+    color:var(--text);font-family:var(--ui);line-height:1.5;-webkit-font-smoothing:antialiased;
+    background-attachment:fixed}
+  a{color:inherit}
+  .wrap{max-width:var(--maxw);margin:0 auto;padding:0 22px}
+  .num{font-family:var(--mono);font-variant-numeric:tabular-nums}
+  .eyebrow{font-size:12px;letter-spacing:.13em;text-transform:uppercase;color:var(--accent);font-weight:650}
+  section{padding:58px 0}
+  h2{font-size:clamp(24px,3.4vw,34px);letter-spacing:-.02em;margin:.35em 0 .3em;text-wrap:balance}
+  .lead{color:var(--dim);font-size:16px;max-width:60ch;margin:0 0 6px}
+
+  /* nav */
+  nav{position:sticky;top:0;z-index:40;backdrop-filter:blur(14px);
+      background:color-mix(in srgb,var(--bg2) 82%,transparent);border-bottom:1px solid var(--border)}
+  .navin{display:flex;align-items:center;gap:16px;height:56px;max-width:var(--maxw);margin:0 auto;padding:0 22px}
+  .brand{display:flex;align-items:center;gap:10px;font-weight:650;letter-spacing:-.01em;margin-right:auto}
+  .navlinks{display:flex;gap:20px;font-size:14px;color:var(--dim)}
+  .navlinks a{text-decoration:none}.navlinks a:hover{color:var(--text)}
+  @media (max-width:640px){.navlinks{display:none}}
+
+  .mark{flex:none}
+
+  /* hero */
+  .hero{text-align:center;padding-top:64px}
+  .hero h1{font-size:clamp(34px,6vw,58px);line-height:1.02;letter-spacing:-.03em;margin:18px 0 0;text-wrap:balance}
+  .hero h1 .g{background:linear-gradient(120deg,var(--gold),var(--accent));-webkit-background-clip:text;background-clip:text;color:transparent}
+  .hero p.sub{font-size:clamp(16px,2vw,19px);color:var(--dim);max-width:56ch;margin:18px auto 0;text-wrap:balance}
+  .badges{display:flex;gap:8px;justify-content:center;flex-wrap:wrap;margin-top:22px}
+  .badge{font-size:12px;color:var(--dim);border:1px solid var(--border);background:var(--surface);
+         padding:5px 11px;border-radius:20px}
+  .cta{display:flex;gap:12px;justify-content:center;flex-wrap:wrap;margin-top:26px}
+  .cmd{display:inline-flex;align-items:center;gap:12px;background:var(--surface);border:1px solid var(--border-strong);
+       border-radius:11px;padding:11px 12px 11px 16px;font-family:var(--mono);font-size:13.5px;color:var(--text)}
+  .cmd .dollar{color:var(--faint)}
+  .cmd button{font:inherit;font-family:var(--ui);font-size:12px;font-weight:600;color:var(--text);
+      background:var(--surface-3);border:1px solid var(--border-strong);border-radius:7px;padding:5px 10px;cursor:pointer}
+  .cmd button:hover{border-color:var(--accent)}
+  .btn{display:inline-flex;align-items:center;gap:8px;font-weight:600;font-size:14px;text-decoration:none;
+       padding:11px 18px;border-radius:11px;border:1px solid transparent;cursor:pointer}
+  .btn.primary{background:linear-gradient(120deg,var(--gold),var(--accent));color:#241300}
+  .btn.ghost{background:var(--surface);border-color:var(--border-strong);color:var(--text)}
+  .btn.ghost:hover{border-color:var(--accent)}
+
+  /* macOS screen mock */
+  .screen{margin:44px auto 0;max-width:900px;border-radius:16px;overflow:hidden;border:1px solid var(--border);
+    background:linear-gradient(180deg,#211E27,#141319);box-shadow:var(--shadow);position:relative}
+  .menubar{display:flex;align-items:center;height:30px;padding:0 14px;background:rgba(10,9,13,.72);
+    border-bottom:1px solid rgba(255,255,255,.05);font-size:12.5px;color:#EDEBF0}
+  .menubar .apple{font-weight:700;margin-right:16px;opacity:.85}
+  .menubar .mleft{display:flex;gap:15px;color:#C9C5D2;font-size:12.5px}
+  .menubar .mleft b{color:#fff;font-weight:600}
+  .menubar .mright{margin-left:auto;display:flex;align-items:center;gap:13px;color:#EDEBF0}
+  .menubar .status{display:flex;align-items:center;gap:7px;font-family:var(--mono);font-variant-numeric:tabular-nums;font-weight:600}
+  .menubar .status .d{width:7px;height:7px;border-radius:50%;background:var(--green)}
+  .stagebody{position:relative;height:588px;background:
+      radial-gradient(700px 400px at 20% 20%,rgba(125,162,255,.10),transparent 60%),
+      radial-gradient(600px 360px at 90% 10%,rgba(227,154,86,.10),transparent 60%),#191722}
+  .panelfloat{position:absolute;top:14px;right:16px}
+
+  /* dark panel mock (matches the app) */
+  .dpanel{width:308px;border-radius:16px;padding:15px;background:rgba(30,28,34,.96);
+    border:1px solid rgba(255,255,255,.07);box-shadow:0 18px 50px rgba(0,0,0,.5)}
+  .dp-head{display:flex;align-items:center;gap:11px;margin-bottom:13px}
+  .dp-head .t{font-weight:700;font-size:15px;line-height:1.1}
+  .dp-head .s{font-size:12px;color:var(--dim)}
+  .dp-head .ic{margin-left:auto;display:flex;gap:12px;color:var(--faint)}
+  .card{border-radius:13px;padding:13px 13px;background:rgba(255,255,255,.03);
+        border:1px solid rgba(255,255,255,.05);margin-bottom:11px}
+  .card:last-child{margin-bottom:0}
+  .crow{display:flex;align-items:center;gap:8px;margin-bottom:11px}
+  .crow .dot{width:8px;height:8px;border-radius:50%}
+  .crow .nm{font-weight:650;font-size:13.5px}
+  .crow .pills{margin-left:auto;display:flex;gap:6px}
+  .pill{font-size:11px;font-weight:600;padding:3px 8px;border-radius:20px;background:rgba(255,255,255,.08);color:var(--dim)}
+  .pill.amber{background:rgba(242,168,26,.18);color:#F2B646}
+  .pill.long{font-weight:500}
+  .g-row{margin-bottom:12px}
+  .g-row:last-child{margin-bottom:0}
+  .g-top{display:flex;justify-content:space-between;align-items:baseline;font-size:13px;margin-bottom:6px}
+  .g-top .lab{color:var(--dim)}
+  .g-top .pct{font-family:var(--mono);font-weight:700;color:var(--green)}
+  .bar{height:8px;border-radius:5px;background:rgba(255,255,255,.09);overflow:hidden}
+  .bar>i{display:block;height:100%;border-radius:5px;background:linear-gradient(90deg,rgba(79,203,139,.85),var(--green))}
+  .reset{display:flex;align-items:center;gap:6px;font-size:11.5px;color:var(--faint);margin-top:6px}
+  .signed{font-size:12.5px;color:var(--dim)}
+  .dp-foot{border-top:1px solid rgba(255,255,255,.06);margin-top:13px;padding-top:11px;font-size:11.5px;color:var(--faint);
+    display:flex;justify-content:space-between}
+
+  /* feature blocks */
+  .feat{display:grid;grid-template-columns:1fr 1fr;gap:34px;align-items:center}
+  .feat.rev .fx{order:2}
+  .feat h3{font-size:22px;letter-spacing:-.01em;margin:.4em 0 .35em}
+  .feat p{color:var(--dim);font-size:15px;margin:0}
+  .feat .fx{display:flex;justify-content:center}
+  @media (max-width:760px){.feat{grid-template-columns:1fr;gap:22px}.feat.rev .fx{order:0}}
+
+  /* floating pill mock */
+  .pill-mock{display:inline-flex;align-items:center;gap:16px;background:rgba(23,21,28,.96);
+    border:1px solid rgba(255,255,255,.08);border-radius:999px;padding:11px 20px;box-shadow:0 14px 40px rgba(0,0,0,.45)}
+  .pill-mock .seg{display:flex;align-items:center;gap:8px;font-size:13.5px;color:var(--dim)}
+  .pill-mock .mini{width:44px;height:7px;border-radius:5px;background:rgba(255,255,255,.1);overflow:hidden}
+  .pill-mock .mini>i{display:block;height:100%;background:var(--green);border-radius:5px}
+  .pill-mock .pc{font-family:var(--mono);font-weight:700;color:var(--green)}
+  .pill-mock .model{color:var(--text);font-weight:600;font-size:13px}
+
+  /* touch bar mock */
+  .tbar{display:flex;align-items:center;gap:18px;background:#000;border:1px solid #1a1a1a;border-radius:9px;
+    padding:12px 20px;box-shadow:inset 0 0 0 1px rgba(255,255,255,.02)}
+  .tbar .seg{display:flex;align-items:center;gap:9px;font-size:14px;color:#8b8b90}
+  .tbar .nm{color:#fff;font-weight:600}
+  .tbar .mini{width:52px;height:8px;border-radius:5px;background:#2a2a2c;overflow:hidden}
+  .tbar .mini>i{display:block;height:100%;background:var(--green);border-radius:5px}
+  .tbar .pc{color:#fff;font-weight:700;font-family:var(--mono)}
+  .tbar .rs{color:#6a6a6f;font-size:12.5px}
+  .tbar .model{color:#e7e7ea;font-weight:600}
+  .tbar-scroll{overflow-x:auto}
+
+  /* cost section */
+  .newtag{display:inline-block;font-size:11px;font-weight:700;letter-spacing:.04em;color:#241300;
+    background:linear-gradient(120deg,var(--gold),var(--accent));padding:3px 9px;border-radius:20px;vertical-align:middle;margin-left:10px}
+  .browser{margin-top:26px;border-radius:14px;overflow:hidden;border:1px solid var(--border);box-shadow:var(--shadow);background:#fff}
+  .chrome{display:flex;align-items:center;gap:8px;height:40px;padding:0 14px;background:#e9e9ee;border-bottom:1px solid #d9d9e0}
+  .chrome .dots{display:flex;gap:7px}.chrome .dots i{width:11px;height:11px;border-radius:50%;display:block}
+  .chrome .url{margin:0 auto;font-size:12px;color:#5b5b66;background:#fff;border:1px solid #dcdce3;border-radius:7px;
+    padding:4px 14px;font-family:var(--mono)}
+  .browser iframe{width:100%;height:760px;border:0;display:block;background:#fff}
+  .costnote{margin-top:14px;font-size:13.5px;color:var(--faint);text-align:center}
+  .costnote a{color:var(--accent);text-decoration:none;font-weight:600}
+
+  /* privacy strip */
+  .strip{background:var(--surface);border:1px solid var(--border);border-radius:16px;padding:26px 28px}
+  .strip-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:22px}
+  .strip h4{margin:0 0 6px;font-size:15px}
+  .strip p{margin:0;color:var(--dim);font-size:13.5px}
+  @media (max-width:700px){.strip-grid{grid-template-columns:1fr}}
+
+  footer{border-top:1px solid var(--border);padding:34px 0 60px;color:var(--faint);font-size:13.5px}
+  .foot-in{display:flex;justify-content:space-between;gap:16px;flex-wrap:wrap;align-items:center}
+  footer a{color:var(--dim);text-decoration:none}footer a:hover{color:var(--accent)}
+
+  .reveal{opacity:0;transform:translateY(14px);animation:rise .7s cubic-bezier(.2,.7,.2,1) forwards}
+  @keyframes rise{to{opacity:1;transform:none}}
+  @media (prefers-reduced-motion:reduce){.reveal{animation:none;opacity:1;transform:none}html{scroll-behavior:auto}}
+</style>
+</head>
+<body>
+
+<svg width="0" height="0" style="position:absolute" aria-hidden="true"><defs>
+  <linearGradient id="gm" x1="0" y1="0" x2="1" y2="1">
+    <stop offset="0" stop-color="#F2A81A"/><stop offset="1" stop-color="#E38A46"/>
+  </linearGradient></defs></svg>
+
+<nav>
+  <div class="navin">
+    <span class="brand">
+      <svg class="mark" width="22" height="22" viewBox="0 0 40 40" aria-hidden="true">
+        <circle cx="20" cy="20" r="15" fill="none" stroke="url(#gm)" stroke-width="6" stroke-linecap="round" stroke-dasharray="79 95" transform="rotate(128 20 20)"/></svg>
+      AI Usage Bar
+    </span>
+    <div class="navlinks">
+      <a href="#features">Features</a>
+      <a href="#cost">Cost</a>
+      <a href="#install">Install</a>
+      <a href="https://github.com/captainkie/ai-usage-bar">GitHub</a>
+    </div>
+  </div>
+</nav>
+
+<header class="hero wrap reveal">
+  <svg class="mark" width="58" height="58" viewBox="0 0 40 40" aria-hidden="true" style="margin:0 auto;display:block">
+    <circle cx="20" cy="20" r="15" fill="none" stroke="url(#gm)" stroke-width="6" stroke-linecap="round" stroke-dasharray="79 95" transform="rotate(128 20 20)"/></svg>
+  <h1>Your AI usage <span class="g">&amp; cost</span>,<br/>live in the menu bar.</h1>
+  <p class="sub">A tiny, private, open-source macOS app. Watch your Claude&nbsp;Code, Codex, and Gemini limits at a glance — then open a local-first <b style="color:var(--text)">cost dashboard</b> that shows exactly where your spend goes, by project.</p>
+  <div class="badges">
+    <span class="badge">macOS 13+</span>
+    <span class="badge">Apple Silicon &amp; Intel</span>
+    <span class="badge">MIT · open source</span>
+    <span class="badge">No telemetry</span>
+  </div>
+  <div class="cta">
+    <div class="cmd"><span class="dollar">$</span><span id="cmd">curl -fsSL https://raw.githubusercontent.com/captainkie/ai-usage-bar/main/install.sh | bash</span><button onclick="copyCmd(this)">Copy</button></div>
+  </div>
+  <div class="cta">
+    <a class="btn primary" href="#cost">See the cost dashboard ↓</a>
+    <a class="btn ghost" href="https://github.com/captainkie/ai-usage-bar">View on GitHub</a>
+  </div>
+
+  <!-- macOS screen: menu bar + panel -->
+  <div class="screen" role="img" aria-label="The app's menu-bar item and dropdown panel">
+    <div class="menubar">
+      <span class="apple"></span>
+      <div class="mleft"><b>Claude</b><span>File</span><span>Edit</span><span>View</span></div>
+      <div class="mright">
+        <span class="status"><span class="d"></span>5h 37%&nbsp;&nbsp;wk 49%</span>
+        <svg width="17" height="12" viewBox="0 0 18 13" fill="none" aria-hidden="true"><path d="M9 11.5a1 1 0 100-2 1 1 0 000 2Z" fill="#EDEBF0"/><path d="M3 6.5a8 8 0 0112 0M5.4 8.7a5 5 0 017.2 0" stroke="#EDEBF0" stroke-width="1.4" stroke-linecap="round"/></svg>
+        <svg width="26" height="13" viewBox="0 0 26 13" fill="none" aria-hidden="true"><rect x="1" y="2" width="21" height="9" rx="2.4" stroke="#EDEBF0" stroke-opacity=".7" stroke-width="1.3"/><rect x="3" y="4" width="14" height="5" rx="1" fill="#EDEBF0"/><rect x="23" y="4.5" width="2" height="4" rx="1" fill="#EDEBF0" fill-opacity=".7"/></svg>
+        <span class="num">16:26</span>
+      </div>
+    </div>
+    <div class="stagebody">
+      <div class="panelfloat">
+        <div class="dpanel">
+          <div class="dp-head">
+            <svg class="mark" width="30" height="30" viewBox="0 0 40 40" aria-hidden="true"><rect width="40" height="40" rx="9" fill="rgba(242,168,26,.14)"/><circle cx="20" cy="20" r="11" fill="none" stroke="url(#gm)" stroke-width="5" stroke-linecap="round" stroke-dasharray="58 70" transform="rotate(128 20 20)"/></svg>
+            <div><div class="t">AI Usage</div><div class="s">Max</div></div>
+            <div class="ic">
+              <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M21 12a9 9 0 11-3-6.7M21 4v4h-4"/></svg>
+              <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.6 1.6 0 00.3 1.8l.1.1a2 2 0 11-2.8 2.8l-.1-.1a1.6 1.6 0 00-2.7 1.1V21a2 2 0 11-4 0v-.1A1.6 1.6 0 007 19.4a1.6 1.6 0 00-1.8.3l-.1.1a2 2 0 11-2.8-2.8l.1-.1a1.6 1.6 0 00-1.1-2.7H1a2 2 0 110-4h.1A1.6 1.6 0 004.6 7a1.6 1.6 0 00-.3-1.8l-.1-.1a2 2 0 112.8-2.8l.1.1a1.6 1.6 0 001.8.3H9a1.6 1.6 0 001-1.5V1a2 2 0 114 0v.1a1.6 1.6 0 001 1.5 1.6 1.6 0 001.8-.3l.1-.1a2 2 0 112.8 2.8l-.1.1a1.6 1.6 0 00-.3 1.8V7a1.6 1.6 0 001.5 1H23a2 2 0 110 4h-.1a1.6 1.6 0 00-1.5 1Z" stroke-width="1.5"/></svg>
+            </div>
+          </div>
+          <div class="card">
+            <div class="crow"><span class="dot" style="background:var(--claude)"></span><span class="nm">Claude Code</span>
+              <span class="pills"><span class="pill">Opus 4.8</span><span class="pill amber">xHigh</span></span></div>
+            <div class="g-row">
+              <div class="g-top"><span class="lab">5-hour</span><span class="pct">37%</span></div>
+              <div class="bar"><i style="width:37%"></i></div>
+              <div class="reset">◷ resets in 3h 11m</div>
+            </div>
+            <div class="g-row">
+              <div class="g-top"><span class="lab">Weekly</span><span class="pct">49%</span></div>
+              <div class="bar"><i style="width:49%"></i></div>
+              <div class="reset">◷ resets in 1d 6h</div>
+            </div>
+          </div>
+          <div class="card">
+            <div class="crow"><span class="dot" style="background:var(--codex)"></span><span class="nm">Codex</span>
+              <span class="pills"><span class="pill">Free</span></span></div>
+            <div class="g-row">
+              <div class="g-top"><span class="lab">Monthly</span><span class="pct">5%</span></div>
+              <div class="bar"><i style="width:5%"></i></div>
+              <div class="reset">◷ resets in 19d 23h</div>
+            </div>
+          </div>
+          <div class="card">
+            <div class="crow"><span class="dot" style="background:var(--gemini)"></span><span class="nm">Gemini</span>
+              <span class="pills"><span class="pill long">Gemini Code Assist · unlimited</span></span></div>
+            <div class="signed">Signed in</div>
+          </div>
+          <div class="dp-foot"><span>&lt;/&gt; GitHub</span><span>Updated 16:26</span></div>
+        </div>
+      </div>
+    </div>
+  </div>
+</header>
+
+<section id="features" class="wrap">
+  <div style="text-align:center;margin-bottom:10px">
+    <span class="eyebrow">Three ways to glance</span>
+    <h2>Never leave your editor to check <code style="color:var(--accent)">/status</code></h2>
+  </div>
+
+  <div class="feat">
+    <div class="fx">
+      <div class="dpanel" style="width:290px">
+        <div class="dp-head"><svg class="mark" width="26" height="26" viewBox="0 0 40 40"><rect width="40" height="40" rx="9" fill="rgba(242,168,26,.14)"/><circle cx="20" cy="20" r="11" fill="none" stroke="url(#gm)" stroke-width="5" stroke-linecap="round" stroke-dasharray="58 70" transform="rotate(128 20 20)"/></svg>
+          <div><div class="t" style="font-size:14px">AI Usage</div><div class="s">Max</div></div></div>
+        <div class="card">
+          <div class="crow"><span class="dot" style="background:var(--claude)"></span><span class="nm">Claude Code</span><span class="pills"><span class="pill amber">xHigh</span></span></div>
+          <div class="g-row"><div class="g-top"><span class="lab">5-hour</span><span class="pct">37%</span></div><div class="bar"><i style="width:37%"></i></div></div>
+          <div class="g-row"><div class="g-top"><span class="lab">Weekly</span><span class="pct">49%</span></div><div class="bar"><i style="width:49%"></i></div></div>
+        </div>
+      </div>
+    </div>
+    <div>
+      <span class="eyebrow">Menu-bar panel</span>
+      <h3>The full picture, one click away</h3>
+      <p>Your <b style="color:var(--text)">5-hour</b> and <b style="color:var(--text)">weekly</b> Claude limits with progress bars, the model you're actually running (e.g. <i>Opus&nbsp;4.8</i>), your reasoning effort, and live “resets in 3h&nbsp;11m” countdowns — plus Codex usage and your Gemini tier.</p>
+    </div>
+  </div>
+
+  <div class="feat rev" style="margin-top:14px">
+    <div class="fx">
+      <div class="pill-mock">
+        <svg class="mark" width="20" height="20" viewBox="0 0 40 40"><circle cx="20" cy="20" r="13" fill="none" stroke="url(#gm)" stroke-width="6" stroke-linecap="round" stroke-dasharray="68 82" transform="rotate(128 20 20)"/></svg>
+        <span class="seg">5h <span class="mini"><i style="width:37%"></i></span> <span class="pc">37%</span></span>
+        <span class="seg">wk <span class="mini"><i style="width:49%"></i></span> <span class="pc">49%</span></span>
+        <span class="model">Opus 4.8 · xHigh</span>
+      </div>
+    </div>
+    <div>
+      <span class="eyebrow">Floating bar</span>
+      <h3>Park it anywhere on screen</h3>
+      <p>A draggable pill that floats above every window. Right-click for <i>Open panel</i>, <i>Settings</i>, or <i>Hide</i> — keep your limits in the corner of your eye while you work.</p>
+    </div>
+  </div>
+
+  <div class="feat" style="margin-top:14px">
+    <div class="fx" style="width:100%">
+      <div class="tbar-scroll" style="width:100%">
+        <div class="tbar">
+          <span class="seg"><span class="dot" style="width:8px;height:8px;border-radius:50%;background:var(--claude);display:inline-block"></span><span class="nm">Claude</span></span>
+          <span class="seg">5h <span class="mini"><i style="width:37%"></i></span> <span class="pc">37%</span> <span class="rs">3h 11m</span></span>
+          <span class="seg">wk <span class="mini"><i style="width:49%"></i></span> <span class="pc">49%</span> <span class="rs">1d 6h</span></span>
+          <span class="model">Opus 4.8 · xHigh</span>
+        </div>
+      </div>
+    </div>
+    <div>
+      <span class="eyebrow">Touch Bar</span>
+      <h3>For the Macs that still have one</h3>
+      <p>A compact item lives in the Control Strip — always visible, in every app. Tap to expand a full-width readout across the whole bar, tap again to collapse.</p>
+    </div>
+  </div>
+</section>
+
+<section id="cost" class="wrap">
+  <div style="text-align:center;margin-bottom:6px">
+    <span class="eyebrow">New</span>
+    <h2>See where your spend goes<span class="newtag">Cost tracking</span></h2>
+    <p class="lead" style="margin:10px auto 0">Local-first cost, computed from the session files already on your Mac — across <b style="color:var(--text)">Claude, Codex, and Gemini</b>. Break it down by <b style="color:var(--text)">project</b>, over today / 7&nbsp;days / month / all, and set a <b style="color:var(--text)">monthly budget</b> per project with an alert before you blow past it.</p>
+  </div>
+
+  <div class="browser">
+    <div class="chrome">
+      <span class="dots"><i style="background:#ff5f57"></i><i style="background:#febc2e"></i><i style="background:#28c840"></i></span>
+      <span class="url">ai-usage-bar · cost dashboard</span>
+    </div>
+    <iframe src="cost.html" title="AI Usage Bar — interactive cost dashboard demo" loading="lazy"></iframe>
+  </div>
+  <p class="costnote">↑ Live, interactive demo — switch the time window, toggle Cost / Tokens, click a project to filter, or flip to the menu-bar view. <a href="cost.html" target="_blank" rel="noopener">Open it full-screen →</a><br/><span style="color:var(--faint)">Sample data. The real app reads your own local files — nothing leaves your Mac.</span></p>
+</section>
+
+<section class="wrap">
+  <div class="strip">
+    <div class="strip-grid">
+      <div><h4>🔒 Private by design</h4><p>Usage comes from your own Keychain token to one Anthropic endpoint; cost is computed entirely on-device from your local session files. No accounts, no analytics, no telemetry.</p></div>
+      <div><h4>🪶 Tiny &amp; native</h4><p>A single Swift menu-bar app — AppKit + SwiftUI. No Electron, no background bloat. Reads what's already on disk.</p></div>
+      <div><h4>🛠 Self-hosted</h4><p>MIT-licensed and open source. Build it yourself with <code>swift run</code>; nothing is downloaded from anyone else.</p></div>
+    </div>
+  </div>
+</section>
+
+<section id="install" class="wrap" style="text-align:center">
+  <span class="eyebrow">Install</span>
+  <h2>Two lines, no Xcode needed</h2>
+  <div class="cta"><div class="cmd"><span class="dollar">$</span><span>curl -fsSL https://raw.githubusercontent.com/captainkie/ai-usage-bar/main/install.sh | bash</span><button onclick="copyCmd(this)">Copy</button></div></div>
+  <div class="cta"><div class="cmd"><span class="dollar">$</span><span>brew install captainkie/tap/ai-usage-bar</span><button onclick="copyCmd(this)">Copy</button></div></div>
+  <p class="lead" style="margin:18px auto 0;text-align:center">The <code class="num">● 5h · wk</code> item appears in your menu bar. Requires macOS&nbsp;13+ and a signed-in Claude&nbsp;Code.</p>
+  <p class="lead" style="margin:10px auto 0;text-align:center;font-size:14px;color:var(--faint)">Already installed? <b style="color:var(--dim)">Update the same way</b> — <code class="num">brew upgrade ai-usage-bar</code>, or just re-run the installer. Your settings are kept.</p>
+</section>
+
+<footer class="wrap">
+  <div class="foot-in">
+    <span>MIT © 2026 captainkie · Fosivo Labs — not affiliated with Anthropic, OpenAI, Google, or Apple.</span>
+    <span style="display:flex;gap:18px">
+      <a href="https://github.com/captainkie/ai-usage-bar">GitHub</a>
+      <a href="https://github.com/sponsors/captainkie">Sponsor</a>
+      <a href="https://buymeacoffee.com/captainkiez">Buy me a coffee</a>
+    </span>
+  </div>
+</footer>
+
+<script>
+  function copyCmd(btn){
+    const text=btn.parentElement.querySelector('span:not(.dollar)').textContent;
+    navigator.clipboard.writeText(text).then(()=>{const o=btn.textContent;btn.textContent='Copied ✓';setTimeout(()=>btn.textContent=o,1400);});
+  }
+  // gentle reveal on scroll
+  const io=new IntersectionObserver((es)=>es.forEach(e=>{if(e.isIntersecting){e.target.classList.add('reveal');io.unobserve(e.target);}}),{threshold:.12});
+  document.querySelectorAll('section, .feat').forEach(el=>io.observe(el));
+</script>
+</body>
+</html>

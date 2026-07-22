@@ -40,6 +40,29 @@ screen. Right-click for *Open panel*, *Settings*, or *Hide*.
 
 ---
 
+## 💸 Cost tracking
+
+<img src="cost-dashboard.png" width="720" alt="Cost dashboard — spend by project, time windows, and budgets" />
+
+See exactly **where your AI spend goes** — computed locally from the session
+files already on your Mac (**Claude Code · Codex · Gemini**). Nothing leaves your
+machine; it just reads what's already there and prices it with a bundled table.
+
+- **Time windows** — today · 7 days · 30 days · this month · all time.
+- **By project** — spend grouped by working directory, biggest first. Click a
+  project to filter the whole view.
+- **By model** — which models cost you the most.
+- **Monthly budgets** — set a per-project limit; get a progress bar plus an alert
+  at 80% and 100%.
+- **Two surfaces** — a compact view from the menu bar, or a full self-contained
+  dashboard that **opens in your browser**.
+
+<img src="cost-menubar.png" width="260" alt="Cost menu-bar view" />
+
+🌐 **[Try the live demo →](https://captainkie.github.io/ai-usage-bar/)**
+
+---
+
 ## ⚙️ Settings & onboarding
 
 - **First-run scan** detects which AI CLIs you're signed in to — **Claude Code**
@@ -70,6 +93,8 @@ curl -fsSL https://raw.githubusercontent.com/captainkie/ai-usage-bar/main/instal
 ```
 
 or `brew install captainkie/tap/ai-usage-bar` · macOS 13+
+
+Already installed? Update the same way — `brew upgrade ai-usage-bar`, or just re-run the installer above.
 
 💖 [Sponsor](https://github.com/sponsors/captainkie) · ☕ [Buy me a coffee](https://buymeacoffee.com/captainkiez)
 

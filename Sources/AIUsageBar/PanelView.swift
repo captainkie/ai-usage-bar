@@ -7,6 +7,7 @@ struct PanelView: View {
     @ObservedObject private var settings = Settings.shared
     var onRefresh: () -> Void
     var onOpenSettings: () -> Void
+    var onOpenCost: () -> Void
     var onQuit: () -> Void
 
     var body: some View {
@@ -137,6 +138,11 @@ struct PanelView: View {
                 Link(destination: githubURL) {
                     Label("GitHub", systemImage: "chevron.left.forwardslash.chevron.right")
                         .font(.caption.weight(.medium))
+                }
+                .buttonStyle(.borderless).foregroundStyle(.secondary)
+
+                Button(action: onOpenCost) {
+                    Label("Cost", systemImage: "dollarsign.circle").font(.caption.weight(.medium))
                 }
                 .buttonStyle(.borderless).foregroundStyle(.secondary)
 

@@ -17,6 +17,8 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
 
     private var onboardingWindow: NSWindow?
     private var settingsWindow: NSWindow?
+    private var costWindow: NSWindow?
+    private let costStore = CostStore()
 
     func applicationDidFinishLaunching(_ notification: Notification) {
         statusItem = NSStatusBar.system.statusItem(withLength: NSStatusItem.variableLength)
@@ -30,6 +32,7 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
                 viewModel: viewModel,
                 onRefresh: { [weak self] in self?.refresh() },
                 onOpenSettings: { [weak self] in self?.showSettings() },
+                onOpenCost: { [weak self] in self?.showCostDashboard() },
                 onQuit: { NSApp.terminate(nil) }
             )
         )
@@ -77,6 +80,7 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
         Task { @MainActor in
             await viewModel.reload()
             updateDisplays()
+            costStore.backgroundBudgetCheck()
         }
     }
 
@@ -182,5 +186,15 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
         }
         NSApp.activate(ignoringOtherApps: true)
         settingsWindow?.makeKeyAndOrderFront(nil)
+    }
+
+    private func showCostDashboard() {
+        panelController.close()
+        if costWindow == nil {
+            costWindow = makeWindow(title: "AI Usage · Cost",
+                size: NSSize(width: 496, height: 640), view: CostView())
+        }
+        NSApp.activate(ignoringOtherApps: true)
+        costWindow?.makeKeyAndOrderFront(nil)
     }
 }
